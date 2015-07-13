@@ -8,9 +8,3 @@ jdk:
 after_success:
    - mvn clean cobertura:cobertura
    - mvn test
-
-notifications:
-  email:
-      recipients:
-     - magnus.larsson@callistaenterprise.se
-     - magnus.larsson.ml@gmail.com
