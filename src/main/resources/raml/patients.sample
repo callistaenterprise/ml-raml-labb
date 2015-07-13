@@ -1,0 +1,26 @@
+[
+  {
+    "username":"U1",
+    "patientID":"1234",
+    "firstname":"F1",
+    "lastname":"L1",
+    "weight":100,
+    "height":200
+  },
+  {
+    "username":"U2",
+    "patientID":"1234",
+    "firstname":"F1",
+    "lastname":"L1",
+    "weight":100,
+    "height":200
+  },
+  {
+    "username":"U3",
+    "patientID":"1234",
+    "firstname":"F1",
+    "lastname":"L1",
+    "weight":100,
+    "height":200
+  }
+]

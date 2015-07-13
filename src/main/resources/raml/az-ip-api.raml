@@ -1,0 +1,179 @@
+#%RAML 0.8
+title: AZ-IP
+version: v0.1
+
+schemas:
+  - patient: !include patient.schema
+  - patients: |
+     {
+       "type": "array",
+       "$schema": "http://json-schema.org/draft-03/schema",
+       "description": "a collection of patients",
+       "items": { "$ref": "patient" }
+     }
+
+resourceTypes:
+  - readOnlyCollection:
+      description: Collection of available <<resourcePathName>>.
+      get:
+        description: Get a list of <<resourcePathName>>.
+        responses:
+          200:
+            body:
+              application/json:
+                example: |
+                  <<exampleCollection>>
+  - collection:
+      description: Collection of available <<resourcePathName>>.
+      get:
+        description: Get a list of <<resourcePathName>>.
+        responses:
+          200:
+            body:
+              application/json:
+                schema: <<resourcePathName|!pluralize>>
+                example: |
+                  <<exampleCollection>>
+      post:
+        description: | 
+          Add a new <<resourcePathName|!singularize>>.
+        queryParameters:
+          access_token:
+            description: "The access token provided by the authentication application"
+            example: AABBCCDD
+            required: true
+            type: string
+        body:
+          application/json:
+            schema: <<resourcePathName|!singularize>>
+            example: |
+              <<exampleItem>>
+        responses:
+          200:
+#            body:
+#              application/json:
+#                example: |
+#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
+  - collection-item:
+      description: Entity representing a <<resourcePathName|!singularize>>
+      get:
+        description: |
+          Get the <<resourcePathName|!singularize>>
+          with <<resourcePathName|!singularize>>Id =
+          {<<resourcePathName|!singularize>>Id}
+        responses:
+          200:
+            body:
+              application/json:
+                schema: <<resourcePathName|!singularize>>
+                example: |
+                  <<exampleItem>>
+          404:
+            body:
+              application/json:
+                example: |
+                  {"message": "<<resourcePathName|!singularize>> not found" }
+
+traits:
+  - searchable:
+      queryParameters:
+        query:
+          description: |
+            JSON array [{"field1","value1","operator1"},{"field2","value2","operator2"},...,{"fieldN","valueN","operatorN"}] <<description>>
+          example: |
+            <<example>>
+  - orderable:
+      queryParameters:
+        orderBy:
+          description: |
+            Order by field: <<fieldsList>>
+          type: string
+          required: false
+        order:
+          description: Order
+          enum: [desc, asc]
+          default: desc
+          required: false
+  - pageable:
+      queryParameters:
+        offset:
+          description: Skip over a number of elements by specifying an offset value for the query
+          type: integer
+          required: false
+          example: 20
+          default: 0
+        limit:
+          description: Limit the number of elements on the response
+          type: integer
+          required: false
+          example: 80
+          default: 10
+
+/coutries:
+/studies:
+/applications:
+/sensors:
+/patients:
+  type:
+    collection:
+      exampleCollection: !include patients.sample
+      exampleItem: !include patient-new.sample
+  get:
+    is: [
+#          TO DO: PROBLEMS WITH QUERY PARAMETERS!!!
+#          searchable: {description: "with valid searchable fields: lastName", example: "[\"lastName\", \"l\", \"matches\"]"},
+#          orderable: {fieldsList: "username, firstName, lastName"},
+#          pageable
+        ]
+  /{username}:
+    type:
+      collection-item:
+        exampleItem: !include patient-retrieve.sample
+
+/carers:
+  post:
+    body:
+      application/json:
+        example: | 
+          {
+            "username": "u1",
+            "patientID": "1",
+            "firstname": "f1",
+            "lastname": "l1",
+            "weight": "100",
+            "height": "200"
+          }
+    responses:
+      200:
+      500:
+        body:
+          application/json:
+            example: |
+              {
+                "errorMessage": "The patient couldn't be created."
+              }
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            example: | 
+              [
+                {
+                  "username": "u1",
+                  "patientID": "1",
+                  "firstname": "f1",
+                  "lastname": "l1",
+                  "weight": "101",
+                  "height": "201"
+                },
+                {
+                  "username": "u2",
+                  "patientID": "2",
+                  "firstname": "f2",
+                  "lastname": "l2",
+                  "weight": "102",
+                  "height": "202"
+                }
+              ]
+/doctors:

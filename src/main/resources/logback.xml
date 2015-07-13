@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="5 seconds" debug="false">
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%-5level] %logger{15} - %msg%n%rEx</pattern>
+			<!-- For improved loggin throughput but risks to loose some leg-events if the application exist unexpectedly -->
+			<immediateFlush>false</immediateFlush>
+			<!-- -->
+		</encoder>
+	</appender>
+
+	<!-- jax-rs: WARN=no logging, INFO=heaaders and status, DEBUG=bodies as well -->
+	<logger name="jax-rs" level="DEBUG" />
+
+	<!-- Uncomment for logging ALL HTTP request and responses -->
+	<!-- 	<logger name="com.excilys.ebi.gatling.http" level="TRACE" /> -->
+	<!-- Uncomment for logging ONLY FAILED HTTP request and responses -->
+	<!-- 	<logger name="com.excilys.ebi.gatling.http" level="DEBUG" /> -->
+
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</configuration>

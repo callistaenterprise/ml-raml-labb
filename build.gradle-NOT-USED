@@ -4,10 +4,13 @@ buildscript {
     }
     repositories {
         mavenCentral()
-        maven { url "https://repo.spring.io/snapshot" }
+        //maven { url "https://repo.spring.io/snapshot" }
         maven { url "https://repo.spring.io/milestone" }
+        maven { url 'https://repository.mulesoft.org/snapshots/' }
+        maven { url 'https://repository.mulesoft.org/releases/' }        
     }
     dependencies {
+//        classpath "org.raml:raml-gradle-plugin:1.0-SNAPSHOT"
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}") 
     }
 }
@@ -16,6 +19,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'spring-boot' 
+//apply plugin: 'raml'
 
 jar {
     baseName = 'az-ip-api-server'
@@ -39,6 +43,9 @@ dependencies {
     testCompile("org.springframework.boot:spring-boot-starter-test") 
 }
 
+// raml {
+//     basePackageName = 'example.resources'
+// }
 
 eclipse {
     classpath {
