@@ -79,6 +79,7 @@
       <plugin>
           <groupId>org.raml.plugins</groupId>
           <artifactId>raml-jaxrs-maven-plugin</artifactId>
+          <version>1.3.2</version>
           <configuration>
               <sourceDirectory>${basedir}/src/main/resources/raml</sourceDirectory>
               <basePackageName>com.az.ip.api</basePackageName>

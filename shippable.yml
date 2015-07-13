@@ -6,5 +6,6 @@ jdk:
   - oraclejdk8
 
 after_success:
-   - mvn clean cobertura:cobertura
-   - mvn test
+# cobertura does not seem to work with Java 8...
+#   - mvn clean cobertura:cobertura
+   - mvn test surefire-report:report -DoutputDirectory=shippable/testresults
