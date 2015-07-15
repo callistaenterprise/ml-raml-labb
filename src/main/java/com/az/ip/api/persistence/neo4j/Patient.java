@@ -1,19 +1,19 @@
-package com.az.ip.api.persistence.jpa;
+package com.az.ip.api.persistence.neo4j;
 
+import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.util.Assert;
 
-//import javax.persistence.Entity;
+@NodeEntity
+public class Patient {
 
-//@Entity
-public class Patient extends AbstractEntity {
-
+    private @GraphId Long id;
     private String username;
     private String patientID;
     private String firstname;
     private String lastname;
     private Integer weight;
     private Integer height;
-
 
     public Patient(String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
 

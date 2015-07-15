@@ -1,7 +1,7 @@
 package com.az.ip.api;
 
 import com.az.ip.api.model.Patient;
-import com.az.ip.api.persistence.jpa.PatientRepository;
+import com.az.ip.api.persistence.neo4j.PatientNeo4jRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
@@ -30,12 +31,13 @@ public class ApplicationTests {
     int port;
 
     @Inject
-    PatientRepository repository;
+    PatientNeo4jRepository repository;
 
 	private RestTemplate restTemplate = new TestRestTemplate();
     private String baseUrl = null;
 
     @Before
+    @Transactional
     public void setupDb() {
         repository.deleteAll();
         repository.save(createDbPatient("U11"));
@@ -49,6 +51,7 @@ public class ApplicationTests {
     }
 
     @Test
+    @Transactional
     public void testPostPatient() {
 
         String username = "U41";
@@ -65,6 +68,7 @@ public class ApplicationTests {
     }
 
     @Test
+    @Transactional
     public void testGetPatient() {
 
         String username = "U21";
@@ -77,7 +81,10 @@ public class ApplicationTests {
     }
 
     @Test
+    @Transactional
     public void testGetPatientsOk() {
+
+        System.err.println("### setupDb created: " + getDbCnt());
 
         ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl, Patient[].class);
         Patient[] body = entity.getBody();
@@ -93,8 +100,8 @@ public class ApplicationTests {
         return cnt;
     }
 
-    private com.az.ip.api.persistence.jpa.Patient createDbPatient(String username) {
-        return new com.az.ip.api.persistence.jpa.Patient(username, "1234", "F1", "L1", 100, 200);
+    private com.az.ip.api.persistence.neo4j.Patient createDbPatient(String username) {
+        return new com.az.ip.api.persistence.neo4j.Patient(username, "1234", "F1", "L1", 100, 200);
     }
 
     private Patient createRestPatient(String username) {
