@@ -1,6 +1,7 @@
 package com.az.ip.api;
 
-import com.az.ip.api.model.Patient;
+import com.az.ip.api.model.*;
+import com.az.ip.api.model.Error;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import com.az.ip.api.resource.Patients;
 
@@ -20,9 +21,7 @@ public class PatientResource implements Patients {
 
     @Override
     public Patients.GetPatientsByUsernameResponse getPatientsByUsername(String username) throws Exception {
-
         return GetPatientsByUsernameResponse.withJsonOK(createPatient(repository.findByUsername(username)));
-//        return GetPatientsByUsernameResponse.withJsonOK(createTestPatient(username));
     }
 
     @Override
@@ -40,8 +39,14 @@ public class PatientResource implements Patients {
 
     @Override
     public Patients.PostPatientsResponse postPatients(String accessToken, Patient entity) throws Exception {
-        repository.save(createPatient(entity));
-        return Patients.PostPatientsResponse.withOK();
+        try {
+            repository.save(createPatient(entity));
+            return Patients.PostPatientsResponse.withOK();
+        } catch (RuntimeException ex) {
+            System.err.println("EX: " + ex);
+            System.err.println("EX.cause: " + ex.getCause());
+            return Patients.PostPatientsResponse.withJsonConflict(new Error().withCode(-1).withMessage(ex.getMessage()));
+        }
     }
 
     private Patient createPatient(com.az.ip.api.persistence.jpa.Patient p) {

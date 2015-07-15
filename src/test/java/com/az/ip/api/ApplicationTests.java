@@ -1,6 +1,7 @@
 package com.az.ip.api;
 
-import com.az.ip.api.model.Patient;
+import com.az.ip.api.model.*;
+import com.az.ip.api.model.Error;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +20,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
@@ -49,7 +51,7 @@ public class ApplicationTests {
     }
 
     @Test
-    public void testPostPatient() {
+    public void testPostPatientOk() {
 
         String username = "U41";
 
@@ -65,7 +67,24 @@ public class ApplicationTests {
     }
 
     @Test
-    public void testGetPatient() {
+    public void testPostPatientDuplicateError() {
+
+        String username = "U11";
+
+        Patient newPatient = createRestPatient(username);
+        ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newPatient, Error.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.CONFLICT, entity.getStatusCode());
+        assertNotNull(entity.getBody());
+        // TODO: Add verification of the fields content in the Error-object
+
+        // Verify state in db
+        assertEquals(3, getDbCnt());
+    }
+
+    @Test
+    public void testGetPatientOk() {
 
         String username = "U21";
 
@@ -77,6 +96,18 @@ public class ApplicationTests {
     }
 
     @Test
+    public void testGetPatientNotFoundError() {
+
+        String username = "U99";
+
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+        assertNull(entity.getBody());
+    }
+
+    @Test
     public void testGetPatientsOk() {
 
         ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl, Patient[].class);
@@ -85,6 +116,19 @@ public class ApplicationTests {
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertEquals(3, body.length);
+    }
+
+    @Test
+    public void testGetPatientsNoFound() {
+
+        repository.deleteAll();
+
+        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl, Patient[].class);
+        Patient[] body = entity.getBody();
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals(0, body.length);
     }
 
     private int getDbCnt() {

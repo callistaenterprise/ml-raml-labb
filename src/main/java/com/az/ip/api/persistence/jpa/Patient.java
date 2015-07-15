@@ -2,12 +2,15 @@ package com.az.ip.api.persistence.jpa;
 
 import org.springframework.util.Assert;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 
 @Entity
 public class Patient extends AbstractEntity {
 
+    @Column(unique=true)
     private String username;
+
     private String patientID;
     private String firstname;
     private String lastname;
