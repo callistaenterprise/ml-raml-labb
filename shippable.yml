@@ -5,11 +5,17 @@ language: java
 jdk:
   - oraclejdk8
 
+# cache downlaoded dependencies, add [reset_minion] in commit message to clean the cache
+cache: true
+
+before_script:
+  - mkdir -p shippable/buildoutput
+
+after_script:
+  - cp target/az-ip-api-server-1.0.0-SNAPSHOT.jar ./shippable/buildoutput
+
 after_success:
 # cobertura does not seem to work with Java 8...
 #   - mvn clean cobertura:cobertura
 #   - mvn test surefire-report:report -DoutputDirectory=shippable/testresults
    - mvn package
-   - ls target
-   - cp target/*.jar .
-   - ls
