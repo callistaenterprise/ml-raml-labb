@@ -9,4 +9,4 @@ after_success:
 # cobertura does not seem to work with Java 8...
 #   - mvn clean cobertura:cobertura
 #   - mvn test surefire-report:report -DoutputDirectory=shippable/testresults
-   - mvn test
+   - mvn test package
