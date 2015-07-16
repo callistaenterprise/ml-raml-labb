@@ -26,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
 @SpringApplicationConfiguration(classes = Application.class)
 @WebAppConfiguration
 @IntegrationTest({"server.port=0", "management.port=0"})
-public class ApplicationTests {
+public class PatientIntegrationTests {
 
     @Value("${local.server.port}")
     int port;

@@ -33,3 +33,19 @@ Try autocompete
     --groupId=com.az.ip.api --artifactId=az-ip-api-server --version=1.0.0-SNAPSHOT az-ip-api-server
 
     #--boot-version=1.2.5.RELEASE --packageName=com.az.ip.api.server --description=IP API server 
+
+# Docker
+
+    mvn package
+    docker build -t az-1 .
+    docker run -it --rm -p 8080:8080 az-1
+    
+    curl -H "Content-Type: application/json" -X POST -d '{"username":"U11","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl -H "Content-Type: application/json" -X POST -d '{"username":"U21","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl "docker:8080/patients" -i
+    curl "docker:8080/patients/21" -i
+    curl -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl "docker:8080/patients/41" -i
+    
+    mvn -Dtest=*SystemIntegrationTests test
