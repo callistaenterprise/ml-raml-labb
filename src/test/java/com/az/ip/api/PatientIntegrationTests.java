@@ -31,10 +31,16 @@ public class PatientIntegrationTests {
     @Value("${local.server.port}")
     int port;
 
+    @Value("${mysuer:demo}")
+    String user;
+
+    @Value("${mypwd:omed.1}")
+    String pwd;
+
     @Inject
     PatientRepository repository;
 
-	private RestTemplate restTemplate = new TestRestTemplate();
+	private RestTemplate restTemplate = null;
     private String baseUrl = null;
 
     @Before
@@ -46,8 +52,31 @@ public class PatientIntegrationTests {
     }
 
     @Before
-    public void setupBaseUrl() {
+    public void setupBaseUrlAndRestTemplate() {
         baseUrl = "http://localhost:" + port + "/patients";
+        restTemplate = new TestRestTemplate(user, pwd);
+    }
+
+    @Test
+    public void testLoginErrorNoCredentials() {
+        RestTemplate invalidRestTemplate = new TestRestTemplate();
+        ResponseEntity<Patient[]> entity = invalidRestTemplate.getForEntity(baseUrl, Patient[].class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+        assertNull(entity.getBody());
+        assertEquals("Basic realm=\"Spring\"", entity.getHeaders().get("WWW-Authenticate").get(0));
+    }
+
+    @Test
+    public void testLoginErrorInvalidCredentials() {
+        RestTemplate invalidRestTemplate = new TestRestTemplate("non-exisintg-user", "invalid-password");
+        ResponseEntity<Patient[]> entity = invalidRestTemplate.getForEntity(baseUrl, Patient[].class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+        assertNull(entity.getBody());
+        assertEquals("Basic realm=\"Spring\"", entity.getHeaders().get("WWW-Authenticate").get(0));
     }
 
     @Test

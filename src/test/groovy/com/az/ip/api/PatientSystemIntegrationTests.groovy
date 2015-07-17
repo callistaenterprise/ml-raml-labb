@@ -3,12 +3,10 @@ package com.az.ip.api
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import org.springframework.test.context.web.WebAppConfiguration;
-
-
+import org.springframework.test.context.web.WebAppConfiguration
 import wslite.http.auth.HTTPBasicAuthorization
 import wslite.rest.RESTClient
 import wslite.rest.RESTClientException
@@ -18,11 +16,52 @@ import wslite.rest.RESTClientException
 @WebAppConfiguration
 class PatientSystemIntegrationTests {
 
-    RESTClient client = new RESTClient("http://docker:8080")
+    @Value('${myhost:docker}')
+    String host
+
+    @Value('${myport:8080}')
+    String port
+
+    @Value('${mysuer:demo}')
+    String user
+
+    @Value('${mypwd:omed.1}')
+    String pwd
+
+    String baseUrl
+    RESTClient client
 
     @Before
     def void before() {
-        client.authorization = new HTTPBasicAuthorization("demo", "123")
+        baseUrl = "http://$host:$port"
+        println "Perform tests using base url: $baseUrl"
+        client = new RESTClient(baseUrl)
+        client.authorization = new HTTPBasicAuthorization(user, pwd)
+    }
+
+    @Test
+    public void testLoginErrorNoCredentials() {
+        RESTClient invalidClient = new RESTClient(baseUrl)
+        try {
+            invalidClient.get(path: "/patients", accept: "application/json")
+        } catch (RESTClientException ex) {
+            assert ex.message == "404 Not Found"
+            assert ex.response.contentLength == 0
+            assert ex.response.headers.get("WWW-Authenticate") == 'Basic realm="Spring"'
+        }
+    }
+
+    @Test
+    public void testLoginErrorInvalidCredentials() {
+        RESTClient invalidClient = new RESTClient(baseUrl)
+        invalidClient.authorization = new HTTPBasicAuthorization("non-exisintg-user", "invalid-password")
+        try {
+            invalidClient.get(path: "/patients", accept: "application/json")
+        } catch (RESTClientException ex) {
+            assert ex.message == "404 Not Found"
+            assert ex.response.contentLength == 0
+            assert ex.response.headers.get("WWW-Authenticate") == 'Basic realm="Spring"'
+        }
     }
 
     @Test
@@ -31,9 +70,10 @@ class PatientSystemIntegrationTests {
         // Get current number of patients
         def response = client.get(path: "/patients", accept: "application/json")
         assert response.statusCode == 200
-//        println response.contentAsString
         def cnt = response.json.size()
 
+//        println response.contentAsString
+        println "No of existing patients: " + cnt
 
         // Create a patient with a random username
         def rndUsername = UUID.randomUUID().toString()

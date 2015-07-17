@@ -36,16 +36,21 @@ Try autocompete
 
 # Docker
 
+    mvn spring-boot:run
     mvn package
     docker build -t az-1 .
     docker run -it --rm -p 8080:8080 az-1
     
-    curl -H "Content-Type: application/json" -X POST -d '{"username":"U11","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl -H "Content-Type: application/json" -X POST -d '{"username":"U21","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl "docker:8080/patients" -i
-    curl "docker:8080/patients/21" -i
-    curl -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl "docker:8080/patients/41" -i
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U11","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U21","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl --user demo:omed.1 "docker:8080/patients" -i
+    curl --user demo:omed.1 "docker:8080/patients/21" -i
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
+    curl --user demo:omed.1 "docker:8080/patients/41" -i
+    
+    
     
     mvn -Dtest=*SystemIntegrationTests test
+    
+    mvn -Dtest=*SystemIntegrationTests test -Dmyhost=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com -Dmyport=30507 -Dmuuser=demo -Dmypwd=omed.1
