@@ -36,18 +36,24 @@ Try autocompete
 
 # Docker
 
+    docker build -f Dockerfile-build -t magnuslarsson/az-ip-build .
+    docker run -it --rm  magnuslarsson/az-ip-build /bin/bash
+
+
     mvn spring-boot:run
     mvn package
     docker build -t az-1 .
     docker run -it --rm -p 8080:8080 az-1
     
-    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U11","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U21","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl --user demo:omed.1 "docker:8080/patients" -i
-    curl --user demo:omed.1 "docker:8080/patients/21" -i
-    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' docker:8080/patients -i
-    curl --user demo:omed.1 "docker:8080/patients/41" -i
+    docker run -it --rm -p 8080:8080 magnuslarsson/az-ip-api-server
+
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U11","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' https://docker:8080/patients -ik
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U21","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' https://docker:8080/patients -ik
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' https://docker:8080/patients -ik
+    curl --user demo:omed.1 "https://docker:8080/patients" -ik
+    curl --user demo:omed.1 "https://docker:8080/patients/U21" -ik
+    curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' https://docker:8080/patients -ik
+    curl --user demo:omed.1 "https://docker:8080/patients/U41" -ik
     
     
     

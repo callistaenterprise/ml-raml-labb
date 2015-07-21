@@ -1,5 +1,7 @@
 package com.az.ip.api
 
+import static org.junit.Assert.fail;
+
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,17 +35,34 @@ class PatientSystemIntegrationTests {
 
     @Before
     def void before() {
-        baseUrl = "http://$host:$port"
+        baseUrl = "https://$host:$port"
         println "Perform tests using base url: $baseUrl"
-        client = new RESTClient(baseUrl)
+        client = createRestClient(baseUrl)
         client.authorization = new HTTPBasicAuthorization(user, pwd)
     }
 
     @Test
-    public void testLoginErrorNoCredentials() {
-        RESTClient invalidClient = new RESTClient(baseUrl)
+    public void testLoginErrorNoHttps() {
+        RESTClient invalidClient = createRestClient("http://$host:$port")
+
         try {
             invalidClient.get(path: "/patients", accept: "application/json")
+            fail("Expected an error due to http access to a https protected resource");
+
+        } catch (RESTClientException ex) {
+            assert ex.message == "Unexpected end of file from server"
+            assert ex.response == null
+        }
+    }
+
+    @Test
+    public void testLoginErrorNoCredentials() {
+        RESTClient invalidClient = createRestClient(baseUrl)
+
+        try {
+            invalidClient.get(path: "/patients", accept: "application/json")
+            fail("Expected an error due to access to a protected resource without any credentials specified");
+
         } catch (RESTClientException ex) {
             assert ex.message == "404 Not Found"
             assert ex.response.contentLength == 0
@@ -53,10 +72,13 @@ class PatientSystemIntegrationTests {
 
     @Test
     public void testLoginErrorInvalidCredentials() {
-        RESTClient invalidClient = new RESTClient(baseUrl)
+        RESTClient invalidClient = createRestClient(baseUrl)
         invalidClient.authorization = new HTTPBasicAuthorization("non-exisintg-user", "invalid-password")
+
         try {
             invalidClient.get(path: "/patients", accept: "application/json")
+            fail("Expected an error due to access to a protected resource with incorrect credentials specified");
+
         } catch (RESTClientException ex) {
             assert ex.message == "404 Not Found"
             assert ex.response.contentLength == 0
@@ -117,23 +139,12 @@ class PatientSystemIntegrationTests {
 
         // TODO Update and remove the patient...
 
-//        def json = response.json
-//
-//        assert json.size() == 3
-//        assert json.totalPages == 1
-//        assert json.totalElements == 3
-//        assert json.content.size() == 3
-//        assert json.content.firstname.any() {
-//            firstname ->
-//                firstname.equals("Boyd")
-//                firstname.equals("Carter")
-//                firstname.equals("Dave")
-//        }
     }
 
-//    def assert200OK(response) {
-//        assert 200 == response.statusCode
-//        assert "OK" == response.statusMessage
-//    }
+    private RESTClient createRestClient(String baseUrl) {
+        client = new RESTClient(baseUrl)
+        client.httpClient.sslTrustAllCerts = true
+        return client
+    }
 
 }

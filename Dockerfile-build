@@ -1,0 +1,5 @@
+FROM shippable/minv2
+MAINTAINER Magnus Larsson <magnus.larsson.ml@gmail.com>
+
+ADD . .
+RUN mvn install clean

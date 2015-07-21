@@ -5,8 +5,9 @@ language: java
 jdk:
   - oraclejdk8
 
-# cache downlaoded dependencies, add [reset_minion] in commit message to clean the cache
-cache: true
+# Replaced by a custom docker build image that already have all maven decpendecies cached
+## cache downlaoded dependencies, add [reset_minion] in commit message to clean the cache
+#cache: true
 
 before_script:
   - mkdir -p shippable/buildoutput

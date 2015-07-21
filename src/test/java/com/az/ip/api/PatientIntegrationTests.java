@@ -4,6 +4,7 @@ import com.az.ip.api.model.*;
 import com.az.ip.api.model.Error;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,13 +15,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
@@ -51,10 +60,27 @@ public class PatientIntegrationTests {
         repository.save(createDbPatient("U31"));
     }
 
+    @BeforeClass
+    public static void setupSSL() {
+        registerKeyStore("server.jks");
+    }
+
     @Before
     public void setupBaseUrlAndRestTemplate() {
-        baseUrl = "http://localhost:" + port + "/patients";
+        baseUrl = "https://localhost:" + port + "/patients";
         restTemplate = new TestRestTemplate(user, pwd);
+    }
+
+    @Test
+    public void testLoginErrorNoHttps() {
+        try {
+            String baseUrlNoHttps = "http://localhost:" + port + "/patients";
+            RestTemplate invalidRestTemplate = new TestRestTemplate();
+            ResponseEntity<Patient[]> entity = invalidRestTemplate.getForEntity(baseUrlNoHttps, Patient[].class);
+            fail("Expected an error due to http access to a https protected resource");
+        } catch (ResourceAccessException ex) {
+            // OK, we got en exception when trying to access a https protected resource using plain http
+        }
     }
 
     @Test
@@ -172,5 +198,34 @@ public class PatientIntegrationTests {
 
     private Patient createRestPatient(String username) {
         return new Patient().withUsername(username).withPatientID("1234").withFirstname("F1").withLastname("L1").withWeight(100).withHeight(200);
+    }
+
+    private static void registerKeyStore(String keyStoreName) {
+        try {
+            System.err.println("### Load certs from classpath: '" + keyStoreName + "'");
+
+            ClassLoader classLoader = PatientIntegrationTests.class.getClassLoader();
+            InputStream keyStoreInputStream = classLoader.getResourceAsStream(keyStoreName);
+            if (keyStoreInputStream == null) {
+                throw new FileNotFoundException("Could not find file named '" + keyStoreName + "' in the CLASSPATH");
+            }
+
+            //load the keystore
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keystore.load(keyStoreInputStream, null);
+
+            //add to known keystore
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(keystore);
+
+            //default SSL connections are initialized with the keystore above
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustManagers, null);
+            SSLContext.setDefault(sc);
+        } catch (IOException | GeneralSecurityException e) {
+            System.err.println("### ERR: " + e);
+            throw new RuntimeException(e);
+        }
     }
 }
