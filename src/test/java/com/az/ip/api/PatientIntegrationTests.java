@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -28,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -36,6 +40,8 @@ import static org.junit.Assert.*;
 @WebAppConfiguration
 @IntegrationTest({"server.port=0", "management.port=0"})
 public class PatientIntegrationTests {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PatientIntegrationTests.class);
 
     @Value("${local.server.port}")
     int port;
@@ -52,12 +58,17 @@ public class PatientIntegrationTests {
 	private RestTemplate restTemplate = null;
     private String baseUrl = null;
 
+    private final static int MIN_PATIENT_NO = 11;
+    private final static int MAX_PATIENT_NO = 40;
+    private final static int NO_OF_PATIENTS = MAX_PATIENT_NO - MIN_PATIENT_NO + 1;
+
     @Before
     public void setupDb() {
         repository.deleteAll();
-        repository.save(createDbPatient("U11"));
-        repository.save(createDbPatient("U21"));
-        repository.save(createDbPatient("U31"));
+        for (int i = MIN_PATIENT_NO; i <= MAX_PATIENT_NO; i++) {
+            repository.save(createDbPatient(getUsername(i)));
+        }
+        LOG.info("Created {} test patients", repository.count());
     }
 
     @BeforeClass
@@ -74,10 +85,10 @@ public class PatientIntegrationTests {
     @Test
     public void testLoginErrorNoHttps() {
         try {
-            String baseUrlNoHttps = "http://localhost:" + port + "/patients";
-            RestTemplate invalidRestTemplate = new TestRestTemplate();
-            ResponseEntity<Patient[]> entity = invalidRestTemplate.getForEntity(baseUrlNoHttps, Patient[].class);
+            // Make a request using http instead of https, expect an error
+            ResponseEntity<Patient[]> entity = new TestRestTemplate().getForEntity("http://localhost:" + port + "/patients", Patient[].class);
             fail("Expected an error due to http access to a https protected resource");
+
         } catch (ResourceAccessException ex) {
             // OK, we got en exception when trying to access a https protected resource using plain http
         }
@@ -85,8 +96,9 @@ public class PatientIntegrationTests {
 
     @Test
     public void testLoginErrorNoCredentials() {
-        RestTemplate invalidRestTemplate = new TestRestTemplate();
-        ResponseEntity<Patient[]> entity = invalidRestTemplate.getForEntity(baseUrl, Patient[].class);
+
+        // Make a request without credentials, expect 404 (NOT_FOUND) as http response code
+        ResponseEntity<Patient[]> entity = new TestRestTemplate().getForEntity(baseUrl, Patient[].class);
 
         // Verify Rest response
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
@@ -96,8 +108,9 @@ public class PatientIntegrationTests {
 
     @Test
     public void testLoginErrorInvalidCredentials() {
-        RestTemplate invalidRestTemplate = new TestRestTemplate("non-exisintg-user", "invalid-password");
-        ResponseEntity<Patient[]> entity = invalidRestTemplate.getForEntity(baseUrl, Patient[].class);
+
+        // Make a request with invalid credentials, expect 404 (NOT_FOUND) as http response code
+        ResponseEntity<Patient[]> entity = new TestRestTemplate("non-exisintg-user", "invalid-password").getForEntity(baseUrl, Patient[].class);
 
         // Verify Rest response
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
@@ -106,11 +119,9 @@ public class PatientIntegrationTests {
     }
 
     @Test
-    public void testPostPatientOk() {
+    public void testPostPatient() {
 
-        String username = "U41";
-
-        Patient newPatient = createRestPatient(username);
+        Patient newPatient = createRestPatient(getUsername((MAX_PATIENT_NO + 1)));
         ResponseEntity entity = restTemplate.postForEntity(baseUrl, newPatient, Patient.class);
 
         // Verify Rest response
@@ -118,15 +129,13 @@ public class PatientIntegrationTests {
         assertNull(entity.getBody());
 
         // Verify state in db
-        assertEquals(4, getDbCnt());
+        assertEquals(NO_OF_PATIENTS + 1, repository.count());
     }
 
     @Test
     public void testPostPatientDuplicateError() {
 
-        String username = "U11";
-
-        Patient newPatient = createRestPatient(username);
+        Patient newPatient = createRestPatient(getUsername(MIN_PATIENT_NO));
         ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newPatient, Error.class);
 
         // Verify Rest response
@@ -135,42 +144,60 @@ public class PatientIntegrationTests {
         // TODO: Add verification of the fields content in the Error-object
 
         // Verify state in db
-        assertEquals(3, getDbCnt());
+        assertEquals(NO_OF_PATIENTS, repository.count());
     }
 
     @Test
-    public void testGetPatientOk() {
+    public void testGetPatients() {
 
-        String username = "U21";
-
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertEquals(username, entity.getBody().getUsername());
-    }
-
-    @Test
-    public void testGetPatientNotFoundError() {
-
-        String username = "U99";
-
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
-        assertNull(entity.getBody());
-    }
-
-    @Test
-    public void testGetPatientsOk() {
-
-        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl, Patient[].class);
+        // Ask for all patients, e.g. set size to -1
+        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl + "?size=-1", Patient[].class);
         Patient[] body = entity.getBody();
 
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertEquals(3, body.length);
+        assertEquals(NO_OF_PATIENTS, body.length);
+    }
+
+    @Test
+    public void testGetPatientsFirstPage() {
+
+        final int SIZE = 3;
+
+        // TODO: Add sort order on ascending username
+        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl + "?size=" + SIZE, Patient[].class);
+        Patient[] body = entity.getBody();
+
+        // Verify the response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+
+        // Verify that we only got the first patients as specified by LIMIT
+        assertEquals(SIZE, body.length);
+
+        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO and in ascending order
+        final AtomicInteger userId = new AtomicInteger(MIN_PATIENT_NO);
+        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndIncrement()), p.getUsername()));
+    }
+
+    @Test
+    public void testGetPatientsWithPaging() {
+
+        final int PAGE = 2;
+        final int SIZE = 5;
+
+        // TODO: Add sort order on ascending username
+        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl + "?page=" + PAGE + "&size=" + SIZE, Patient[].class);
+        Patient[] body = entity.getBody();
+
+        // Verify the response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+
+        // Verify that we only got the first patients as specified by LIMIT
+        assertEquals(SIZE, body.length);
+
+        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO plus the offset given by PAGE and SIZE (skipping PAGE*SIZE patients)
+        final AtomicInteger userId = new AtomicInteger(MIN_PATIENT_NO + PAGE*SIZE);
+        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndIncrement()), p.getUsername()));
     }
 
     @Test
@@ -186,10 +213,32 @@ public class PatientIntegrationTests {
         assertEquals(0, body.length);
     }
 
-    private int getDbCnt() {
-        int cnt = 0;
-        for (Object p: repository.findAll()) cnt++;
-        return cnt;
+    @Test
+    public void testGetOnePatient() {
+
+        String username = getUsername(MIN_PATIENT_NO);
+
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals(username, entity.getBody().getUsername());
+    }
+
+    @Test
+    public void testGetOnePatientNotFoundError() {
+
+        String username = getUsername(MAX_PATIENT_NO + 1);
+
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
+        assertNull(entity.getBody());
+    }
+
+    private String getUsername(int i) {
+        return "U" + i;
     }
 
     private com.az.ip.api.persistence.jpa.Patient createDbPatient(String username) {
@@ -202,7 +251,7 @@ public class PatientIntegrationTests {
 
     private static void registerKeyStore(String keyStoreName) {
         try {
-            System.err.println("### Load certs from classpath: '" + keyStoreName + "'");
+            LOG.info("Load server certificates from classpath: '" + keyStoreName + "'");
 
             ClassLoader classLoader = PatientIntegrationTests.class.getClassLoader();
             InputStream keyStoreInputStream = classLoader.getResourceAsStream(keyStoreName);

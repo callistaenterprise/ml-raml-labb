@@ -13,6 +13,8 @@
 	<!-- jax-rs: WARN=no logging, INFO=heaaders and status, DEBUG=bodies as well -->
 	<logger name="jax-rs" level="DEBUG" />
 
+	<logger name="com.az.ip.api" level="DEBUG" />
+
 	<!-- Uncomment for logging ALL HTTP request and responses -->
 	<!-- 	<logger name="com.excilys.ebi.gatling.http" level="TRACE" /> -->
 	<!-- Uncomment for logging ONLY FAILED HTTP request and responses -->

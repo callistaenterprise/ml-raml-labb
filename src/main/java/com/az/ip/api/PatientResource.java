@@ -4,9 +4,13 @@ import com.az.ip.api.model.*;
 import com.az.ip.api.model.Error;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import com.az.ip.api.resource.Patients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import javax.inject.Inject;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +19,8 @@ import java.util.List;
  */
 @Path("patients")
 public class PatientResource implements Patients {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PatientResource.class);
 
     @Inject
     PatientRepository repository;
@@ -25,16 +31,23 @@ public class PatientResource implements Patients {
     }
 
     @Override
-    public GetPatientsResponse getPatients() throws Exception {
-        List<Patient> patients = new ArrayList<>();
-        repository.findAll().forEach(p -> patients.add(createPatient(p)));
-        return GetPatientsResponse.withJsonOK(patients);
+    @GET
+    @Produces("application/json")
+    public Patients.GetPatientsResponse getPatients(
+            @QueryParam("query")                       String query,
+            @QueryParam("orderBy")                     String orderBy,
+            @QueryParam("order") @DefaultValue("desc") Patients.Order order,
+            @QueryParam("page")  @DefaultValue("0")    long page,
+            @QueryParam("size")  @DefaultValue("10")   long size)
+            throws Exception {
 
-//        patients.add(createTestPatient("U1"));
-//        patients.add(createTestPatient("U2"));
-//        patients.add(createTestPatient("U3"));
-//
-//        return Patients.GetPatientsResponse.withJsonOK(patients);
+        LOG.debug("getPatients, page: {}, size: {}", page, size);
+        List<Patient> patients = new ArrayList<>();
+        Pageable      pageable     = (size == -1) ? null : new PageRequest((int)page, (int)size);
+
+        repository.findAll(pageable).forEach(p -> patients.add(createPatient(p)));
+
+        return GetPatientsResponse.withJsonOK(patients);
     }
 
     @Override

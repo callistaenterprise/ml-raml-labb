@@ -117,14 +117,14 @@ traits:
           required: false
   - pageable:
       queryParameters:
-        offset:
-          description: Skip over a number of elements by specifying an offset value for the query
+        page:
+          description: Skip over a number of pages by specifying the first page for the query, specify 0 for the start page
           type: integer
           required: false
-          example: 20
+          example: 2
           default: 0
-        limit:
-          description: Limit the number of elements on the response
+        size:
+          description: Specify the size of each page, i.e. the number of elements per page, specify -1 to get all elements (i.e. disable paging)
           type: integer
           required: false
           example: 80
@@ -141,10 +141,9 @@ traits:
       exampleItem: !include patient-new.sample
   get:
     is: [
-#          TO DO: PROBLEMS WITH QUERY PARAMETERS!!!
-#          searchable: {description: "with valid searchable fields: lastName", example: "[\"lastName\", \"l\", \"matches\"]"},
-#          orderable: {fieldsList: "username, firstName, lastName"},
-#          pageable
+          searchable: {description: "with valid searchable fields: lastName", example: "[\"lastName\", \"l\", \"matches\"]"},
+          orderable: {fieldsList: "username, firstName, lastName"},
+          pageable
         ]
   /{username}:
     type:
