@@ -52,4 +52,30 @@ public class Patient extends AbstractEntity {
     public Integer getHeight() {
         return height;
     }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPatientID(String patientID) {
+        this.patientID = patientID;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
+
+    public void setHeight(Integer height) {
+        this.height = height;
+    }
+
+
 }

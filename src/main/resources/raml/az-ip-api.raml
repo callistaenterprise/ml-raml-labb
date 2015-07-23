@@ -30,6 +30,7 @@ schemas:
      }
 
 resourceTypes:
+
   - readOnlyCollection:
       description: Collection of available <<resourcePathName>>.
       get:
@@ -40,6 +41,7 @@ resourceTypes:
               application/json:
                 example: |
                   <<exampleCollection>>
+
   - collection:
       description: Collection of available <<resourcePathName>>.
       get:
@@ -82,6 +84,7 @@ resourceTypes:
             body:
               application/json:
                 schema: error
+
   - collection-item:
       description: Entity representing a <<resourcePathName|!singularize>>
       get:
@@ -101,6 +104,54 @@ resourceTypes:
               application/json:
                 example: |
                   {"message": "<<resourcePathName|!singularize>> not found" }
+      put:
+        description: |
+          Updates an existing <<resourcePathName|!singularize>>.
+        queryParameters:
+          access_token:
+            description: "The access token provided by the authentication application"
+            example: AABBCCDD
+            required: true
+            type: string
+        body:
+          application/json:
+            schema: <<resourcePathName|!singularize>>
+            example: |
+              <<exampleItem>>
+        responses:
+          200:
+#            body:
+#              application/json:
+#                example: |
+#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
+
+          # Invalid parameters in request
+          422:
+            body:
+              application/json:
+                schema: error
+      delete:
+        description: |
+          Deletes an existing <<resourcePathName|!singularize>>.
+        queryParameters:
+          access_token:
+            description: "The access token provided by the authentication application"
+            example: AABBCCDD
+            required: true
+            type: string
+        body:
+        responses:
+          200:
+#            body:
+#              application/json:
+#                example: |
+#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
+
+          # Invalid parameters in request
+          422:
+            body:
+              application/json:
+                schema: error
 
 traits:
   - searchable:

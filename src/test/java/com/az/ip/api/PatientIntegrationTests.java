@@ -291,13 +291,86 @@ public class PatientIntegrationTests {
     @Test
     public void testGetOnePatientNotFoundError() {
 
-        String username = getUsername(MAX_PATIENT_NO + 1);
+        String usernameNotExisting = getUsername(MAX_PATIENT_NO + 1);
 
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + usernameNotExisting, Patient.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
         assertNull(entity.getBody());
+    }
+
+    @Test
+    public void testUpdateOnePatient() {
+
+        String username = getUsername(MIN_PATIENT_NO);
+
+        // Get the patient
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        Patient p = entity.getBody();
+        assertEquals(username, p.getUsername());
+        assertEquals(getExpectedFirstname(username), p.getFirstname());
+
+        // Update the first name
+        p.setFirstname("new-" + p.getFirstname());
+        restTemplate.put(baseUrl + "/" + username, p, Patient.class);
+
+        // Get the patient again
+        ResponseEntity<Patient> entityUpdated = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response of the updated patient
+        assertEquals(HttpStatus.OK, entityUpdated.getStatusCode());
+        Patient pUpdated = entityUpdated.getBody();
+        assertEquals(username, pUpdated.getUsername());
+        assertEquals("new-" + getExpectedFirstname(username), pUpdated.getFirstname());
+    }
+
+    @Test
+    public void testDeletePatient() {
+        String username = getUsername(MIN_PATIENT_NO);
+
+        // Get the patient
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        Patient p = entity.getBody();
+        assertEquals(username, p.getUsername());
+
+        // Delete the patient
+        restTemplate.delete(baseUrl + "/" + username);
+
+        // Verify state in db
+        assertEquals(NO_OF_PATIENTS - 1, repository.count());
+
+        // Get the patient again, should return a 404, NOT_FOUND
+        ResponseEntity<Patient> entityRemoved = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.NOT_FOUND, entityRemoved.getStatusCode());
+        assertNull(entityRemoved.getBody());
+    }
+
+    @Test
+    public void testDeleteNotExistingPatient() {
+
+        String usernameNotExisting = getUsername(MAX_PATIENT_NO + 1);
+
+        // Verify state in db
+        assertEquals(NO_OF_PATIENTS, repository.count());
+
+        // Try to delete the non-existing patient
+        restTemplate.delete(baseUrl + "/" + usernameNotExisting);
+
+        // Verify state in db, i.e. no change
+        assertEquals(NO_OF_PATIENTS, repository.count());
+    }
+
+    private String getExpectedFirstname(String username) {
+        return "F1";
     }
 
     private String getUsername(int i) {
