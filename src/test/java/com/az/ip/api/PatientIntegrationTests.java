@@ -157,6 +157,28 @@ public class PatientIntegrationTests {
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertEquals(NO_OF_PATIENTS, body.length);
+
+        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO and in ascending order
+        final AtomicInteger userId = new AtomicInteger(MIN_PATIENT_NO);
+        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndIncrement()), p.getUsername()));
+
+    }
+
+    @Test
+    public void testGetPatientsDescending() {
+
+        // Ask for all patients, e.g. set size to -1
+        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl + "?size=-1&orderBy=username&order=desc", Patient[].class);
+        Patient[] body = entity.getBody();
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals(NO_OF_PATIENTS, body.length);
+
+        // Verify that we got patients with the expected username's, i.e. starting with MAX_PATIENT_NO and in descending order
+        final AtomicInteger userId = new AtomicInteger(MAX_PATIENT_NO);
+        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndDecrement()), p.getUsername()));
+
     }
 
     @Test
@@ -180,6 +202,26 @@ public class PatientIntegrationTests {
     }
 
     @Test
+    public void testGetPatientsLastPage() {
+
+        final int SIZE = 3;
+
+        // TODO: Add sort order on descending username
+        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl + "?size=" + SIZE + "&orderBy=username&order=desc", Patient[].class);
+        Patient[] body = entity.getBody();
+
+        // Verify the response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+
+        // Verify that we only got the first patients as specified by LIMIT
+        assertEquals(SIZE, body.length);
+
+        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO and in ascending order
+        final AtomicInteger userId = new AtomicInteger(MAX_PATIENT_NO);
+        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndDecrement()), p.getUsername()));
+    }
+
+    @Test
     public void testGetPatientsWithPaging() {
 
         final int PAGE = 2;
@@ -198,6 +240,27 @@ public class PatientIntegrationTests {
         // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO plus the offset given by PAGE and SIZE (skipping PAGE*SIZE patients)
         final AtomicInteger userId = new AtomicInteger(MIN_PATIENT_NO + PAGE*SIZE);
         Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndIncrement()), p.getUsername()));
+    }
+
+    @Test
+    public void testGetPatientsWithPagingDescending() {
+
+        final int PAGE = 2;
+        final int SIZE = 5;
+
+        // TODO: Add sort order on ascending username
+        ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl + "?page=" + PAGE + "&size=" + SIZE + "&orderBy=username&order=desc", Patient[].class);
+        Patient[] body = entity.getBody();
+
+        // Verify the response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+
+        // Verify that we only got the first patients as specified by LIMIT
+        assertEquals(SIZE, body.length);
+
+        // Verify that we got patients with the expected username's, i.e. starting with MAX_PATIENT_NO minus the offset given by PAGE and SIZE (skipping PAGE*SIZE patients)
+        final AtomicInteger userId = new AtomicInteger(MAX_PATIENT_NO - PAGE*SIZE);
+        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndDecrement()), p.getUsername()));
     }
 
     @Test
