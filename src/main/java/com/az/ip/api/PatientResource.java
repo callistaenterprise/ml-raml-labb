@@ -97,7 +97,7 @@ public class PatientResource implements Patients {
     @Override
     public Patients.PostPatientsResponse postPatients(String accessToken, Patient entity) throws Exception {
         try {
-            repository.save(createPatient(entity));
+            repository.save(toNewJpaPatient(entity));
             return Patients.PostPatientsResponse.withOK();
         } catch (RuntimeException ex) {
             LOG.error("postPatient request failed, exception: [{}], cause: []{}", ex, ex.getCause());
@@ -117,7 +117,7 @@ public class PatientResource implements Patients {
         LOG.debug("Get patient with username: {}", username);
         com.az.ip.api.persistence.jpa.Patient p = repository.findByUsername(username);
         LOG.debug("Found patient with id: {} and first-name: {}", p.getId(), p.getFirstname());
-        return GetPatientsByUsernameResponse.withJsonOK(createPatient(p));
+        return GetPatientsByUsernameResponse.withJsonOK(toApiPatient(p));
     }
 
     /**
@@ -142,27 +142,10 @@ public class PatientResource implements Patients {
     @Override
     @Transactional
     public PutPatientsByUsernameResponse putPatientsByUsername(String username, String accessToken, Patient entity) throws Exception {
-        // TODO: Simplify put operation. E.g. use the a technical PK, id, in the rest api...
-
-        LOG.debug("Update patient: {}", entity.getFirstname());
-
-        com.az.ip.api.persistence.jpa.Patient patient = repository.findByUsername(username);
 
         // TODO: What to do if not found??? Upsert or error???
-
-        patient.setUsername(entity.getUsername());
-        patient.setPatientID(entity.getPatientID());
-        patient.setFirstname(entity.getFirstname());
-        patient.setLastname(entity.getLastname());
-        patient.setWeight(entity.getWeight());
-        patient.setHeight(entity.getHeight());
-
-        LOG.debug("Update patient with id: {}", patient.getId());
-
-        repository.save(patient);
-
-        com.az.ip.api.persistence.jpa.Patient p2 = repository.findOne(patient.getId());
-        LOG.debug("Updated patient: {}", p2.getFirstname());
+        LOG.debug("Update patient: {}, {}, {}", entity.getId(), entity.getVersion(), entity.getFirstname());
+        repository.save(toExistingJpaPatient(entity));
 
         return PutPatientsByUsernameResponse.withOK();
     }
@@ -203,14 +186,16 @@ public class PatientResource implements Patients {
         // TODO. Would be nice to be able to use Java 8 streams here!
         // See https://spring.io/blog/2015/03/26/what-s-new-in-spring-data-fowler
         List<Patient> elements = new ArrayList<>();
-        ((pageable == null) ? repository.findAll(sort) : repository.findAll(pageable)).forEach(e -> elements.add(createPatient(e)));
+        ((pageable == null) ? repository.findAll(sort) : repository.findAll(pageable)).forEach(e -> elements.add(toApiPatient(e)));
 
         return elements;
     }
 
-    private Patient createPatient(com.az.ip.api.persistence.jpa.Patient p) {
+    private Patient toApiPatient(com.az.ip.api.persistence.jpa.Patient p) {
         return new Patient()
-            .withUsername (p.getUsername())
+            .withId       (p.getId())
+            .withVersion(p.getVersion())
+            .withUsername(p.getUsername())
             .withPatientID(p.getPatientID())
             .withFirstname(p.getFirstname())
             .withLastname (p.getLastname())
@@ -218,13 +203,15 @@ public class PatientResource implements Patients {
             .withHeight   (p.getHeight());
     }
 
-    private com.az.ip.api.persistence.jpa.Patient createPatient(Patient p) {
+    private com.az.ip.api.persistence.jpa.Patient toNewJpaPatient(Patient p) {
         return new com.az.ip.api.persistence.jpa.Patient(
-            p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
+                p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
         );
     }
 
-    private Patient createTestPatient(String username) {
-        return new Patient().withUsername(username).withPatientID("1234").withFirstname("F1").withLastname("L1").withWeight(100).withHeight(200);
+    private com.az.ip.api.persistence.jpa.Patient toExistingJpaPatient(Patient p) {
+        return new com.az.ip.api.persistence.jpa.Patient(
+                p.getId(), p.getVersion(), p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
+        );
     }
 }

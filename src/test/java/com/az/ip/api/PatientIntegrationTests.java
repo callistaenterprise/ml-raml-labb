@@ -313,6 +313,7 @@ public class PatientIntegrationTests {
         Patient p = entity.getBody();
         assertEquals(username, p.getUsername());
         assertEquals(getExpectedFirstname(username), p.getFirstname());
+        assertEquals(0, (int)p.getVersion());
 
         // Update the first name
         p.setFirstname("new-" + p.getFirstname());
@@ -326,6 +327,56 @@ public class PatientIntegrationTests {
         Patient pUpdated = entityUpdated.getBody();
         assertEquals(username, pUpdated.getUsername());
         assertEquals("new-" + getExpectedFirstname(username), pUpdated.getFirstname());
+        assertEquals(1, (int) pUpdated.getVersion());
+    }
+
+    @Test
+    public void testUpdateOnePatientPessimisticLockError() {
+
+        String username = getUsername(MIN_PATIENT_NO);
+
+        // Get the patient
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        Patient p = entity.getBody();
+        assertEquals(username, p.getUsername());
+        assertEquals(getExpectedFirstname(username), p.getFirstname());
+        assertEquals(0, (int)p.getVersion());
+
+        // Update the first name
+        p.setFirstname("new-" + p.getFirstname());
+        restTemplate.put(baseUrl + "/" + username, p, Patient.class);
+
+        // Get the patient again
+        ResponseEntity<Patient> entityUpdated = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response of the updated patient
+        assertEquals(HttpStatus.OK, entityUpdated.getStatusCode());
+        Patient pUpdated = entityUpdated.getBody();
+        assertEquals(username, pUpdated.getUsername());
+        assertEquals("new-" + getExpectedFirstname(username), pUpdated.getFirstname());
+        assertEquals(1, (int) pUpdated.getVersion());
+
+
+
+
+        // Update the patient again using the now outdated entity
+        p.setFirstname("2-" + p.getFirstname());
+
+        // TODO: How do we get error http codes from a HTTP PUT using the restTemplate???
+        restTemplate.put(baseUrl + "/" + username, p, Patient.class);
+
+        // Get the patient again
+        ResponseEntity<Patient> entityUpdatedAgain = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+
+        // Verify Rest response of the updated patient, i.e. verify that the second stale update did not succeed
+        assertEquals(HttpStatus.OK, entityUpdatedAgain.getStatusCode());
+        Patient pUpdatedagain = entityUpdatedAgain.getBody();
+        assertEquals(username, pUpdatedagain.getUsername());
+        assertEquals("new-" + getExpectedFirstname(username), pUpdatedagain.getFirstname());
+        assertEquals(1, (int) pUpdatedagain.getVersion());
     }
 
     @Test

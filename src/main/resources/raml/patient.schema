@@ -4,6 +4,14 @@
   "id": "http://jsonschema.net",
   "required":false,
   "properties": {
+    "id": {
+      "type": "string",
+      "required":true
+    },
+    "version": {
+      "type": "integer",
+      "required":true
+    },
     "username": {
       "type": "string",
       "required":true

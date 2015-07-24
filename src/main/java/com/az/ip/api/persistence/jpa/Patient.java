@@ -18,6 +18,11 @@ public class Patient extends AbstractEntity {
     private Integer height;
 
 
+    public Patient(String id, int version, String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
+        this(username, patientID, firstname, lastname, weight, height);
+        setIdAndVersionForExistingEntity(id, version);
+    }
+
     public Patient(String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
 
         Assert.hasText(username);
