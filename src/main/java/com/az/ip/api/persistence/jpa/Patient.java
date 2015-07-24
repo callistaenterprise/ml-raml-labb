@@ -18,11 +18,16 @@ public class Patient extends AbstractEntity {
     private Integer height;
 
 
-    public Patient(String id, int version, String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
-        this(username, patientID, firstname, lastname, weight, height);
-        setIdAndVersionForExistingEntity(id, version);
-    }
-
+    /**
+     * Constructor for new (not yet persited) entities, without specifying id and version
+     *
+     * @param username
+     * @param patientID
+     * @param firstname
+     * @param lastname
+     * @param weight
+     * @param height
+     */
     public Patient(String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
 
         Assert.hasText(username);
@@ -37,6 +42,26 @@ public class Patient extends AbstractEntity {
         this.height = height;
     }
 
+    /**
+     * Constructor for existing (already persisted) entities, specifying id, version together with the actual business information regarding the entity
+     *
+     * @param id
+     * @param version
+     * @param username
+     * @param patientID
+     * @param firstname
+     * @param lastname
+     * @param weight
+     * @param height
+     */
+    public Patient(String id, int version, String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
+        this(username, patientID, firstname, lastname, weight, height);
+        setIdAndVersionForExistingEntity(id, version);
+    }
+
+    /**
+     * The default constructor is required by the JPA implementation, but can be set protected to protect is from public visibility
+     */
     protected Patient() {}
 
     public String getUsername() {
