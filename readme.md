@@ -34,6 +34,12 @@ Try autocompete
 
     #--boot-version=1.2.5.RELEASE --packageName=com.az.ip.api.server --description=IP API server 
 
+
+    # CORS Testing
+    spring init --boot-version=1.3.0.M2 --build=maven --java-version=1.8 --packaging=jar \
+    --groupId=com.az.ip.api --artifactId=az-ip-api-cors-server --version=1.0.0-SNAPSHOT az-ip-api-cors-server
+
+
 # Docker
 
     docker build -f Dockerfile-build -t magnuslarsson/az-ip-build .
@@ -56,6 +62,15 @@ Try autocompete
     curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' https://docker:8080/patients -ik
     curl --user demo:omed.1 "https://docker:8080/patients/U41" -ik    
         
+    curl --user demo:omed.1 "https://mt-fo-lb-168423950.us-east-1.elb.amazonaws.com:30507//patients" -ik
+
+
     mvn -Dtest=*SystemIntegrationTests test
     
     mvn -Dtest=*SystemIntegrationTests test -Dmyhost=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com -Dmyport=30507 -Dmuuser=demo -Dmypwd=omed.1
+
+    
+# RAML access
+
+curl -H "Origin: mee" https://192.168.1.74:8080/raml/az-ip-api.raml -skv > /dev/null
+URL in RAML Console: https://localhost:8080/raml/az-ip-api.raml

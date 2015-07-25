@@ -1,4 +1,5 @@
 security:
+  ignored: /raml/**
   user:
     name: demo
     password: omed.1
