@@ -79,7 +79,7 @@ public class PatientIntegrationTests {
 
     @Before
     public void setupBaseUrlAndRestTemplate() {
-        baseUrl = "https://localhost:" + port + BASE_URI;
+        baseUrl = "http://localhost:" + port + BASE_URI;
         restTemplate = new TestRestTemplate(user, pwd);
     }
 

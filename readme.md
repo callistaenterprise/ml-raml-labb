@@ -61,7 +61,7 @@ Try autocompete
 # Shippable test formation    
 
     AWS_HOST=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com
-    AWS_POST=10984
+    AWS_PORT=59406
     mvn -Dtest=*SystemIntegrationTests test -Dmyhost=$AWS_HOST -Dmyport=$AWS_PORT -Dmuuser=demo -Dmypwd=omed.1
 
     $ curl "https://$AWS_HOST:$AWS_PORT" -ik

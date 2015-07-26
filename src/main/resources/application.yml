@@ -4,18 +4,18 @@ security:
     name: demo
     password: omed.1
 
-server:
-  ssl:
-    key-store: classpath:server.jks
-    key-store-password: password
-    key-password: password
+#server:
+#  ssl:
+#    key-store: classpath:server.jks
+#    key-store-password: password
+#    key-password: password
 
 ---
 # For deployment in Docker containers
 spring:
   profiles: docker
 
-server:
-  ssl:
-    key-store: server.jks
+#server:
+#  ssl:
+#    key-store: server.jks
 
