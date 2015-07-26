@@ -56,14 +56,21 @@ Try autocompete
     curl --user demo:omed.1 -H "Content-Type: application/json" -X POST -d '{"username":"U31","patientID":"1234","firstname":"F1","lastname":"L1","weight":100,"height":200}' https://docker:8080/patients -ik
     curl --user demo:omed.1 "https://docker:8080/patients/U41" -ik    
         
-    curl --user demo:omed.1 "https://mt-fo-lb-168423950.us-east-1.elb.amazonaws.com:30507//patients" -ik
-
-
     mvn -Dtest=*SystemIntegrationTests test
     
-    mvn -Dtest=*SystemIntegrationTests test -Dmyhost=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com -Dmyport=30507 -Dmuuser=demo -Dmypwd=omed.1
+# Shippable test formation    
 
-    
+    AWS_HOST=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com
+    AWS_POST=10984
+    mvn -Dtest=*SystemIntegrationTests test -Dmyhost=$AWS_HOST -Dmyport=$AWS_PORT -Dmuuser=demo -Dmypwd=omed.1
+
+    $ curl "https://$AWS_HOST:$AWS_PORT" -ik
+    HTTP/1.1 401 Unauthorized
+
+    curl --user demo:omed.1 "https://$AWS_HOST:$AWS_PORT/api/patients" -ik
+
+    telnet $AWS_HOST $AWS_PORT
+
 # RAML access
 
 ## CORS header:
