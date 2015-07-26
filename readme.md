@@ -34,12 +34,6 @@ Try autocompete
 
     #--boot-version=1.2.5.RELEASE --packageName=com.az.ip.api.server --description=IP API server 
 
-
-    # CORS Testing
-    spring init --boot-version=1.3.0.M2 --build=maven --java-version=1.8 --packaging=jar \
-    --groupId=com.az.ip.api --artifactId=az-ip-api-cors-server --version=1.0.0-SNAPSHOT az-ip-api-cors-server
-
-
 # Docker
 
     docker build -f Dockerfile-build -t magnuslarsson/az-ip-build .
@@ -71,6 +65,8 @@ Try autocompete
 
     
 # RAML access
+
+## CORS header:
 
 curl -H "Origin: mee" https://192.168.1.74:8080/raml/az-ip-api.raml -skv > /dev/null
 URL in RAML Console: https://localhost:8080/raml/az-ip-api.raml

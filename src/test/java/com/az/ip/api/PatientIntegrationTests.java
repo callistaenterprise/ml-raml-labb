@@ -1,8 +1,9 @@
 package com.az.ip.api;
 
-import com.az.ip.api.model.*;
 import com.az.ip.api.model.Error;
+import com.az.ip.api.model.Patient;
 import com.az.ip.api.persistence.jpa.PatientRepository;
+import org.apache.http.NoHttpResponseException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,7 +25,6 @@ import javax.inject.Inject;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +42,7 @@ import static org.junit.Assert.*;
 public class PatientIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatientIntegrationTests.class);
+    private static final String BASE_URI = "/api/patients";
 
     @Value("${local.server.port}")
     int port;
@@ -73,49 +74,13 @@ public class PatientIntegrationTests {
 
     @BeforeClass
     public static void setupSSL() {
-        registerKeyStore("server.jks");
+        SSLUtil.registerKeyStore("server.jks");
     }
 
     @Before
     public void setupBaseUrlAndRestTemplate() {
-        baseUrl = "https://localhost:" + port + "/patients";
+        baseUrl = "https://localhost:" + port + BASE_URI;
         restTemplate = new TestRestTemplate(user, pwd);
-    }
-
-    @Test
-    public void testLoginErrorNoHttps() {
-        try {
-            // Make a request using http instead of https, expect an error
-            ResponseEntity<Patient[]> entity = new TestRestTemplate().getForEntity("http://localhost:" + port + "/patients", Patient[].class);
-            fail("Expected an error due to http access to a https protected resource");
-
-        } catch (ResourceAccessException ex) {
-            // OK, we got en exception when trying to access a https protected resource using plain http
-        }
-    }
-
-    @Test
-    public void testLoginErrorNoCredentials() {
-
-        // Make a request without credentials, expect 404 (NOT_FOUND) as http response code
-        ResponseEntity<Patient[]> entity = new TestRestTemplate().getForEntity(baseUrl, Patient[].class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
-        assertNull(entity.getBody());
-        assertEquals("Basic realm=\"Spring\"", entity.getHeaders().get("WWW-Authenticate").get(0));
-    }
-
-    @Test
-    public void testLoginErrorInvalidCredentials() {
-
-        // Make a request with invalid credentials, expect 404 (NOT_FOUND) as http response code
-        ResponseEntity<Patient[]> entity = new TestRestTemplate("non-exisintg-user", "invalid-password").getForEntity(baseUrl, Patient[].class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
-        assertNull(entity.getBody());
-        assertEquals("Basic realm=\"Spring\"", entity.getHeaders().get("WWW-Authenticate").get(0));
     }
 
     @Test
@@ -293,11 +258,12 @@ public class PatientIntegrationTests {
 
         String usernameNotExisting = getUsername(MAX_PATIENT_NO + 1);
 
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + usernameNotExisting, Patient.class);
+        ResponseEntity<String> entity = restTemplate.getForEntity(baseUrl + "/" + usernameNotExisting, String.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
-        assertNull(entity.getBody());
+        // TODO: Improve quality of this test, e.g. parse the json response...
+        assertTrue("Unexpected error message: " + entity.getBody(), entity.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + usernameNotExisting + "\""));
     }
 
     @Test
@@ -398,11 +364,12 @@ public class PatientIntegrationTests {
         assertEquals(NO_OF_PATIENTS - 1, repository.count());
 
         // Get the patient again, should return a 404, NOT_FOUND
-        ResponseEntity<Patient> entityRemoved = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+        ResponseEntity<String> entityRemoved = restTemplate.getForEntity(baseUrl + "/" + username, String.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.NOT_FOUND, entityRemoved.getStatusCode());
-        assertNull(entityRemoved.getBody());
+        // TODO: Improve quality of this test, e.g. parse the json response...
+        assertTrue("Unexpected error message: " + entityRemoved.getBody(), entityRemoved.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + username + "\""));
     }
 
     @Test
@@ -436,32 +403,4 @@ public class PatientIntegrationTests {
         return new Patient().withUsername(username).withPatientID("1234").withFirstname("F1").withLastname("L1").withWeight(100).withHeight(200);
     }
 
-    private static void registerKeyStore(String keyStoreName) {
-        try {
-            LOG.info("Load server certificates from classpath: '" + keyStoreName + "'");
-
-            ClassLoader classLoader = PatientIntegrationTests.class.getClassLoader();
-            InputStream keyStoreInputStream = classLoader.getResourceAsStream(keyStoreName);
-            if (keyStoreInputStream == null) {
-                throw new FileNotFoundException("Could not find file named '" + keyStoreName + "' in the CLASSPATH");
-            }
-
-            //load the keystore
-            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keystore.load(keyStoreInputStream, null);
-
-            //add to known keystore
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(keystore);
-
-            //default SSL connections are initialized with the keystore above
-            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustManagers, null);
-            SSLContext.setDefault(sc);
-        } catch (IOException | GeneralSecurityException e) {
-            System.err.println("### ERR: " + e);
-            throw new RuntimeException(e);
-        }
-    }
 }

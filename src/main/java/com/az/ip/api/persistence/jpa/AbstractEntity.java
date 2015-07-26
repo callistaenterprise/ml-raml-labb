@@ -2,7 +2,6 @@ package com.az.ip.api.persistence.jpa;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;

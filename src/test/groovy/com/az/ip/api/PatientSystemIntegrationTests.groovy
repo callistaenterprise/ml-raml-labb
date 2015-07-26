@@ -1,7 +1,5 @@
 package com.az.ip.api
 
-import static org.junit.Assert.fail;
-
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,6 +10,8 @@ import org.springframework.test.context.web.WebAppConfiguration
 import wslite.http.auth.HTTPBasicAuthorization
 import wslite.rest.RESTClient
 import wslite.rest.RESTClientException
+
+import static org.junit.Assert.fail
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)

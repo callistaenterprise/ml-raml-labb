@@ -6,7 +6,6 @@ import com.az.ip.api.persistence.jpa.PatientRepository;
 import com.az.ip.api.resource.Patients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,9 +15,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by magnus on 11/07/15.
@@ -116,8 +113,15 @@ public class PatientResource implements Patients {
     public Patients.GetPatientsByUsernameResponse getPatientsByUsername(String username) throws Exception {
         LOG.debug("Get patient with username: {}", username);
         com.az.ip.api.persistence.jpa.Patient p = repository.findByUsername(username);
-        LOG.debug("Found patient with id: {} and first-name: {}", p.getId(), p.getFirstname());
-        return GetPatientsByUsernameResponse.withJsonOK(toApiPatient(p));
+
+        if (p == null) {
+            LOG.debug("Patient with username: {} was not found", username);
+            return GetPatientsByUsernameResponse.withNotFound();
+
+        } else {
+            LOG.debug("Found patient with id: {} and first-name: {}", p.getId(), p.getFirstname());
+            return GetPatientsByUsernameResponse.withJsonOK(toApiPatient(p));
+        }
     }
 
     /**
