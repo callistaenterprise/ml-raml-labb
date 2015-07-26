@@ -73,6 +73,9 @@ Try autocompete
 
 # RAML access
 
+sed -i.org 's/baseUri: https:\/\/localhost:8080\/api/baseUri: \/api/' src/main/resources/public/raml/az-ip-api.raml
+rm src/main/resources/public/raml/az-ip-api.raml.org
+
 ## CORS header:
 
 curl -H "Origin: mee" https://192.168.1.74:8080/raml/az-ip-api.raml -skv > /dev/null

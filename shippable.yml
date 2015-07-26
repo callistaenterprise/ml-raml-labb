@@ -19,4 +19,6 @@ after_success:
 # cobertura does not seem to work with Java 8...
 #   - mvn clean cobertura:cobertura
 #   - mvn test surefire-report:report -DoutputDirectory=shippable/testresults
-   - mvn package
+   - sed -i.org 's/baseUri: https:\/\/localhost:8080\/api/baseUri: \/api/' src/main/resources/public/raml/az-ip-api.raml
+   - rm src/main/resources/public/raml/az-ip-api.raml.org
+   - mvn package -DskipTests
