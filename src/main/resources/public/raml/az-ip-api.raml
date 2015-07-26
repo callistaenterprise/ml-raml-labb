@@ -1,15 +1,12 @@
 #%RAML 0.8
 title: AZ IP API
 version: v0.2
-baseUri: /api
+#baseUri: /api
+baseUri: https://localhost:8080/api
 securitySchemes:
   - basic:
       type: Basic Authentication
 securedBy: [basic]
-
-#baseUri: https://localhost:8080/api
-#baseUri: https://demo:omed.1@192.168.1.74:8080/api
-#baseUri: https://demo:omed.1@mt-fo-lb-168423950.us-east-1.elb.amazonaws.com:30507
 
 schemas:
   - patient: !include patient.schema
