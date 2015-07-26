@@ -97,6 +97,7 @@ public class PatientResource implements Patients {
             repository.save(toNewJpaPatient(entity));
             return Patients.PostPatientsResponse.withOK();
         } catch (RuntimeException ex) {
+            // TODO: Add checks for common erros such as duplicate detectien and improve error message!
             LOG.error("postPatient request failed, exception: [{}], cause: []{}", ex, ex.getCause());
             return Patients.PostPatientsResponse.withJsonConflict(new Error().withCode(-1).withMessage(ex.getMessage()));
         }
