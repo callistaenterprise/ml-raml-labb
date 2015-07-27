@@ -136,18 +136,29 @@ public class StudyResource implements Studies {
         return new Study()
             .withId(entity.getId())
             .withVersion(entity.getVersion())
-            .withName(entity.getName());
+            .withName(entity.getName())
+            .withDescription(entity.getDescription())
+            .withStartdate(entity.getStartdate())
+            .withEnddate(entity.getEnddate());
     }
 
     private JpaStudy toNewDbEntity(Study entity) {
         return new JpaStudy(
-            entity.getName()
+            entity.getName(),
+            entity.getDescription(),
+            entity.getStartdate(),
+            entity.getEnddate()
         );
     }
 
     private JpaStudy toExistingDbEntity(Study entity) {
         return new JpaStudy(
-            entity.getId(), entity.getVersion(), entity.getName()
+            entity.getId(),
+            entity.getVersion(),
+            entity.getName(),
+            entity.getDescription(),
+            entity.getStartdate(),
+            entity.getEnddate()
         );
     }
 }

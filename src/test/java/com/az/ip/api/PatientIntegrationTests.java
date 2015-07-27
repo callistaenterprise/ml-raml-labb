@@ -3,7 +3,6 @@ package com.az.ip.api;
 import com.az.ip.api.model.Error;
 import com.az.ip.api.model.Patient;
 import com.az.ip.api.persistence.jpa.PatientRepository;
-import org.apache.http.NoHttpResponseException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,18 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -68,7 +58,7 @@ public class PatientIntegrationTests {
     public void setupDb() {
         repository.deleteAll();
         for (int i = MIN_PATIENT_NO; i <= MAX_PATIENT_NO; i++) {
-            repository.save(createDbPatient(getUsername(i)));
+            repository.save(createTestDbPatient(getUsername(i)));
         }
         LOG.info("Created {} test patients", repository.count());
     }
@@ -87,7 +77,7 @@ public class PatientIntegrationTests {
     @Test
     public void testPostPatient() {
 
-        Patient newPatient = createRestPatient(getUsername((MAX_PATIENT_NO + 1)));
+        Patient newPatient = createTestApiPatient(getUsername((MAX_PATIENT_NO + 1)));
         ResponseEntity entity = restTemplate.postForEntity(baseUrl, newPatient, Patient.class);
 
         // Verify Rest response
@@ -101,7 +91,7 @@ public class PatientIntegrationTests {
     @Test
     public void testPostPatientDuplicateError() {
 
-        Patient newPatient = createRestPatient(getUsername(MIN_PATIENT_NO));
+        Patient newPatient = createTestApiPatient(getUsername(MIN_PATIENT_NO));
         ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newPatient, Error.class);
 
         // Verify Rest response
@@ -396,11 +386,11 @@ public class PatientIntegrationTests {
         return "U" + i;
     }
 
-    private com.az.ip.api.persistence.jpa.Patient createDbPatient(String username) {
+    private com.az.ip.api.persistence.jpa.Patient createTestDbPatient(String username) {
         return new com.az.ip.api.persistence.jpa.Patient(username, "1234", "F1", "L1", 100, 200);
     }
 
-    private Patient createRestPatient(String username) {
+    private Patient createTestApiPatient(String username) {
         return new Patient().withUsername(username).withPatientID("1234").withFirstname("F1").withLastname("L1").withWeight(100).withHeight(200);
     }
 

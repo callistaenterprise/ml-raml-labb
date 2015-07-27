@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
@@ -59,7 +60,7 @@ public class StudyIntegrationTests {
     public void setupDb() {
         repository.deleteAll();
         for (int i = MIN_NO; i <= MAX_NO; i++) {
-            repository.save(createDbEntity(getName(i)));
+            repository.save(createTestDbEntity(getName(i)));
         }
         LOG.info("Created {} test Studies", repository.count());
     }
@@ -78,7 +79,7 @@ public class StudyIntegrationTests {
     @Test
     public void testPostStudy() {
 
-        Study newEntity = createApiEntity(getName((MAX_NO + 1)));
+        Study newEntity = createTestApiEntity(getName((MAX_NO + 1)));
         ResponseEntity entity = restTemplate.postForEntity(baseUrl, newEntity, Study.class);
 
         // Verify Rest response
@@ -92,7 +93,7 @@ public class StudyIntegrationTests {
     @Test
     public void testPostStudyDuplicateError() {
 
-        Study newStudy = createApiEntity(getName(MIN_NO));
+        Study newStudy = createTestApiEntity(getName(MIN_NO));
         ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newStudy, Error.class);
 
         // Verify Rest response
@@ -236,44 +237,24 @@ public class StudyIntegrationTests {
     @Test
     public void testGetOneStudyByName() {
 
-        String name = getName(MIN_NO);
-
-        ResponseEntity<Study[]> entities = restTemplate.getForEntity(baseUrl + "?name=" + name, Study[].class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.OK, entities.getStatusCode());
-        assertEquals(1, entities.getBody().length);
-
-        Study entity = entities.getBody()[0];
-        assertEquals(name, entity.getName());
+        // The helper method implement the whole test already...
+        lookupEntityByName(getName(MIN_NO));
     }
 
     @Test
     public void testGetOneStudyById() {
 
-        // First get the entity with a known name
+        // First get the id of an entity with a known name
         String name = getName(MIN_NO);
+        String id   = lookupEntityByName(name).getId();
 
-        ResponseEntity<Study[]> entities = restTemplate.getForEntity(baseUrl + "?name=" + name, Study[].class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.OK, entities.getStatusCode());
-        assertEquals(1, entities.getBody().length);
-
-        Study entity1 = entities.getBody()[0];
-        assertEquals(name, entity1.getName());
-        assertNotNull(entity1.getId());
-
-
-        // Now, get the id and perform the actual test
-        String id = entity1.getId();
-
-        ResponseEntity<Study> entity2 = restTemplate.getForEntity(baseUrl + "/" + id, Study.class);
+        // Now, perform the actual test
+        ResponseEntity<Study> entity = restTemplate.getForEntity(baseUrl + "/" + id, Study.class);
 
         // Verify Rest response
-        assertEquals(HttpStatus.OK, entity2.getStatusCode());
-        assertEquals(name, entity2.getBody().getName());
-        assertEquals(id, entity2.getBody().getId());
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals(name, entity.getBody().getName());
+        assertEquals(id, entity.getBody().getId());
     }
 
     @Test
@@ -289,86 +270,76 @@ public class StudyIntegrationTests {
         assertTrue("Unexpected error message: " + entity.getBody(), entity.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + nameNotExisting + "\""));
     }
 
-/*
+
     @Test
     public void testUpdateOneStudy() {
 
-        String username = getName(MIN_NO);
+        String name = getName(MIN_NO);
 
         // Get the Study
-        ResponseEntity<Study> entity = restTemplate.getForEntity(baseUrl + "/" + username, Study.class);
+        Study entity = lookupEntityByName(name);
 
         // Verify Rest response
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        Study p = entity.getBody();
-        assertEquals(username, p.getName());
-        assertEquals(getExpectedFirstname(username), p.getFirstname());
-        assertEquals(0, (int)p.getVersion());
+        assertEquals(name, entity.getName());
+        assertEquals(getExpectedDescription(name), entity.getDescription());
+        assertEquals(0, (int) entity.getVersion());
 
         // Update the first name
-        p.setFirstname("new-" + p.getFirstname());
-        restTemplate.put(baseUrl + "/" + username, p, Study.class);
+        // TODO how do I check the result of the update???
+        entity.setDescription("new-" + entity.getDescription());
+        restTemplate.put(baseUrl + "/" + entity.getId(), entity, Study.class);
 
         // Get the Study again
-        ResponseEntity<Study> entityUpdated = restTemplate.getForEntity(baseUrl + "/" + username, Study.class);
+        Study entityUpdated = lookupEntityByName(name);
 
         // Verify Rest response of the updated Study
-        assertEquals(HttpStatus.OK, entityUpdated.getStatusCode());
-        Study pUpdated = entityUpdated.getBody();
-        assertEquals(username, pUpdated.getName());
-        assertEquals("new-" + getExpectedFirstname(username), pUpdated.getFirstname());
-        assertEquals(1, (int) pUpdated.getVersion());
+        assertEquals(name, entityUpdated.getName());
+        assertEquals("new-" + getExpectedDescription(name), entityUpdated.getDescription());
+        assertEquals(1, (int) entityUpdated.getVersion());
     }
 
     @Test
     public void testUpdateOneStudyPessimisticLockError() {
 
-        String username = getName(MIN_NO);
+        String name = getName(MIN_NO);
 
         // Get the Study
-        ResponseEntity<Study> entity = restTemplate.getForEntity(baseUrl + "/" + username, Study.class);
+        Study entity = lookupEntityByName(name);
 
         // Verify Rest response
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        Study p = entity.getBody();
-        assertEquals(username, p.getName());
-        assertEquals(getExpectedFirstname(username), p.getFirstname());
-        assertEquals(0, (int)p.getVersion());
+        assertEquals(name, entity.getName());
+        assertEquals(getExpectedDescription(name), entity.getDescription());
+        assertEquals(0, (int)entity.getVersion());
 
         // Update the first name
-        p.setFirstname("new-" + p.getFirstname());
-        restTemplate.put(baseUrl + "/" + username, p, Study.class);
+        entity.setDescription("new-" + entity.getDescription());
+        restTemplate.put(baseUrl + "/" + entity.getId(), entity, Study.class);
 
         // Get the Study again
-        ResponseEntity<Study> entityUpdated = restTemplate.getForEntity(baseUrl + "/" + username, Study.class);
+        Study entityUpdated = lookupEntityByName(name);
 
         // Verify Rest response of the updated Study
-        assertEquals(HttpStatus.OK, entityUpdated.getStatusCode());
-        Study pUpdated = entityUpdated.getBody();
-        assertEquals(username, pUpdated.getName());
-        assertEquals("new-" + getExpectedFirstname(username), pUpdated.getFirstname());
-        assertEquals(1, (int) pUpdated.getVersion());
+        assertEquals(name, entityUpdated.getName());
+        assertEquals("new-" + getExpectedDescription(name), entityUpdated.getDescription());
+        assertEquals(1, (int)entityUpdated.getVersion());
 
 
 
-
-        // Update the Study again using the now outdated entity
-        p.setFirstname("2-" + p.getFirstname());
+        // Update the Study again using the now outdated initl entity
+        entity.setDescription("2-" + entity.getDescription());
 
         // TODO: How do we get error http codes from a HTTP PUT using the restTemplate???
-        restTemplate.put(baseUrl + "/" + username, p, Study.class);
+        restTemplate.put(baseUrl + "/" + entity.getId(), entity, Study.class);
 
         // Get the Study again
-        ResponseEntity<Study> entityUpdatedAgain = restTemplate.getForEntity(baseUrl + "/" + username, Study.class);
+        Study entityUpdatedAgain = lookupEntityByName(name);
 
         // Verify Rest response of the updated Study, i.e. verify that the second stale update did not succeed
-        assertEquals(HttpStatus.OK, entityUpdatedAgain.getStatusCode());
-        Study pUpdatedagain = entityUpdatedAgain.getBody();
-        assertEquals(username, pUpdatedagain.getName());
-        assertEquals("new-" + getExpectedFirstname(username), pUpdatedagain.getFirstname());
-        assertEquals(1, (int) pUpdatedagain.getVersion());
+        assertEquals(name, entityUpdatedAgain.getName());
+        assertEquals("new-" + getExpectedDescription(name), entityUpdatedAgain.getDescription());
+        assertEquals(1, (int)entityUpdatedAgain.getVersion());
     }
-*/
+
 
     @Test
     public void testDeleteStudy() {
@@ -417,20 +388,36 @@ public class StudyIntegrationTests {
         assertEquals(NO_OF_ENTITIES, repository.count());
     }
 
-    private String getExpectedFirstname(String username) {
-        return "F1";
+    private Study lookupEntityByName(String name) {
+
+        ResponseEntity<Study[]> entities = restTemplate.getForEntity(baseUrl + "?name=" + name, Study[].class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entities.getStatusCode());
+        assertEquals(1, entities.getBody().length);
+
+        Study entity = entities.getBody()[0];
+        assertEquals(name, entity.getName());
+        assertNotNull(entity.getId());
+
+        // Now, get the id and perform the actual test
+        return entity;
+    }
+
+    private String getExpectedDescription(String name) {
+        return "description";
     }
 
     private String getName(int i) {
         return "Study-" + i;
     }
 
-    private JpaStudy createDbEntity(String name) {
-        return new JpaStudy(name);
+    private JpaStudy createTestDbEntity(String name) {
+        return new JpaStudy(name, getExpectedDescription(name), new Date(), new Date());
     }
 
-    private Study createApiEntity(String name) {
-        return new Study().withName(name);
+    private Study createTestApiEntity(String name) {
+        return new Study().withName(name).withDescription(getExpectedDescription(name)).withStartdate(new Date()).withEnddate(new Date());
     }
 
 }

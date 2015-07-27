@@ -1,9 +1,15 @@
 package com.az.ip.api.persistence.jpa;
 
+import static javax.persistence.TemporalType.DATE;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.util.Date;
 
 @Entity
 public class JpaStudy extends AbstractEntity {
@@ -11,16 +17,26 @@ public class JpaStudy extends AbstractEntity {
     @Column(unique=true)
     private String name;
 
+    private String description;
+
+    @Temporal(DATE)
+    private Date startdate;
+
+    @Temporal(DATE)
+    private Date enddate;
+
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
      *
      * @param name
      */
-    public JpaStudy(String name) {
-
+    public JpaStudy(String name, String description, Date startdate, Date enddate) {
         Assert.hasText(name);
 
         this.name = name;
+        this.description = description;
+        this.startdate = startdate;
+        this.enddate = enddate;
     }
 
     /**
@@ -30,8 +46,8 @@ public class JpaStudy extends AbstractEntity {
      * @param version
      * @param name
      */
-    public JpaStudy(String id, int version, String name) {
-        this(name);
+    public JpaStudy(String id, int version, String name, String description, Date startdate, Date enddate) {
+        this(name, description, startdate, enddate);
         setIdAndVersionForExistingEntity(id, version);
     }
 
@@ -46,5 +62,29 @@ public class JpaStudy extends AbstractEntity {
 
     public void setName(String username) {
         this.name = username;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getStartdate() {
+        return startdate;
+    }
+
+    public void setStartdate(Date startdate) {
+        this.startdate = startdate;
+    }
+
+    public Date getEnddate() {
+        return enddate;
+    }
+
+    public void setEnddate(Date enddate) {
+        this.enddate = enddate;
     }
 }
