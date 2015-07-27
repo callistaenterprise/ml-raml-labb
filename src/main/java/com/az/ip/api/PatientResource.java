@@ -60,7 +60,7 @@ public class PatientResource implements Patients {
         @QueryParam("page")  @DefaultValue("0")   long page,
         @QueryParam("size")  @DefaultValue("10")  long size) {
 
-        LOG.debug("getPatients, orderBy: {}, order: {}, page: {}, size: {}", page, size);
+        LOG.debug("find, orderBy: {}, order: {}, page: {}, size: {}", orderBy, order, page, size);
 
         // TODO: Can we make this a @DefaultValue instead?
         if (orderBy == null) orderBy = DEFAULT_ORDER_FIELD;
@@ -148,6 +148,8 @@ public class PatientResource implements Patients {
     @Transactional
     public PutPatientsByUsernameResponse putPatientsByUsername(String username, String accessToken, Patient entity) throws Exception {
 
+        // Must @Transactional be used???
+
         // TODO: What to do if not found??? Upsert or error???
         LOG.debug("Update patient: {}, {}, {}", entity.getId(), entity.getVersion(), entity.getFirstname());
         repository.save(toExistingJpaPatient(entity));
@@ -199,8 +201,8 @@ public class PatientResource implements Patients {
     private Patient toApiPatient(com.az.ip.api.persistence.jpa.Patient p) {
         return new Patient()
             .withId       (p.getId())
-            .withVersion(p.getVersion())
-            .withUsername(p.getUsername())
+            .withVersion  (p.getVersion())
+            .withUsername (p.getUsername())
             .withPatientID(p.getPatientID())
             .withFirstname(p.getFirstname())
             .withLastname (p.getLastname())
@@ -210,13 +212,13 @@ public class PatientResource implements Patients {
 
     private com.az.ip.api.persistence.jpa.Patient toNewJpaPatient(Patient p) {
         return new com.az.ip.api.persistence.jpa.Patient(
-                p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
+            p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
         );
     }
 
     private com.az.ip.api.persistence.jpa.Patient toExistingJpaPatient(Patient p) {
         return new com.az.ip.api.persistence.jpa.Patient(
-                p.getId(), p.getVersion(), p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
+            p.getId(), p.getVersion(), p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
         );
     }
 }

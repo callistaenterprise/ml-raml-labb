@@ -20,6 +20,7 @@ public class JerseyConfig extends ResourceConfig {
             register(new LoggingFilter(java.util.logging.Logger.getLogger(jaxRsLoggerName), jaxRsLogger.isDebugEnabled()));
         }
 
+        register(StudyResource.class);
         register(PatientResource.class);
     }
 

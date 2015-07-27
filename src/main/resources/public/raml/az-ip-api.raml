@@ -9,6 +9,14 @@ securitySchemes:
 securedBy: [basic]
 
 schemas:
+  - study: !include study/study.schema
+  - studies: |
+     {
+        "type": "array",
+        "$schema": "http://json-schema.org/draft-03/schema",
+       "description": "a collection of sudies",
+        "items": { "$ref": "study" }
+     }
   - patient: !include patient.schema
   - patients: |
      {
@@ -195,7 +203,28 @@ traits:
           default: 20
 
 /coutries:
+
 /studies:
+  type:
+    collection:
+      exampleCollection: !include study/studies.sample
+      exampleItem: !include study/study-new.sample
+  get:
+    is: [
+          orderable: {fieldsList: "name"},
+          pageable
+        ]
+    queryParameters:
+      name:
+        description: "Search by name"
+        example: study-1
+        required: false
+        type: string
+  /{id}:
+    type:
+      collection-item:
+        exampleItem: !include study/study-retrieve.sample
+
 /applications:
 /sensors:
 

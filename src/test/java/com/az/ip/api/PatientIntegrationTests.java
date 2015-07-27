@@ -43,6 +43,7 @@ public class PatientIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatientIntegrationTests.class);
     private static final String BASE_URI = "/api/patients";
+    private static final String PROTOCOL = "http";
 
     @Value("${local.server.port}")
     int port;
@@ -79,7 +80,7 @@ public class PatientIntegrationTests {
 
     @Before
     public void setupBaseUrlAndRestTemplate() {
-        baseUrl = "http://localhost:" + port + BASE_URI;
+        baseUrl = PROTOCOL + "://localhost:" + port + BASE_URI;
         restTemplate = new TestRestTemplate(user, pwd);
     }
 
