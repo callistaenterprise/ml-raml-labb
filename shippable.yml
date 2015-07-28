@@ -20,5 +20,6 @@ after_success:
 #   - mvn clean cobertura:cobertura
 #   - mvn test surefire-report:report -DoutputDirectory=shippable/testresults
 #  - sed -i.org 's/baseUri: https:\/\/localhost:8080\/api/baseUri: \/api/' src/main/resources/public/raml/az-ip-api.raml
-#  - rm src/main/resources/public/raml/az-ip-api.raml.org
+  - "sed -i.org 's/baseUri: https://localhost:8080/api/baseUri: /api/' src/main/resources/public/raml/az-ip-api.raml"
+  - rm src/main/resources/public/raml/az-ip-api.raml.org
   - mvn package -DskipTests
