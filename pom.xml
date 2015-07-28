@@ -121,8 +121,9 @@
             <version>2.17</version>
             <configuration>
                 <redirectTestOutputToFile>true</redirectTestOutputToFile>
+<!--
                 <reportsDirectory>shippable/testresults</reportsDirectory>
-
+-->
                 <failIfNoTests>true</failIfNoTests>
                 <includes>
                     <include>**/*Test*.*</include>
