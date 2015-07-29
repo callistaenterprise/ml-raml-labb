@@ -1,4 +1,8 @@
 #!/bin/sh
 
-sed -i.org 's/baseUri: https:\/\/localhost:8080\/api/baseUri: \/api/' src/main/resources/public/raml/az-ip-api.raml
-rm src/main/resources/public/raml/az-ip-api.raml.org
+cd target/classes
+
+sed -i.org 's/baseUri: https:\/\/localhost:8080\/api/baseUri: \/api/' public/raml/az-ip-api.raml
+zip ../az-ip-api-server-1.0.0-SNAPSHOT.jar public/raml/az-ip-api.raml
+
+cd -
