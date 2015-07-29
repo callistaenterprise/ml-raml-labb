@@ -1,8 +1,8 @@
 {
-  "username":"U1",
-  "patientID":"1234",
-  "firstname":"F1",
-  "lastname":"L1",
-  "weight":100,
-  "height":200
+  "id": "3f7ab6bd-af17-4fea-92c5-781e03d938ba",
+  "version": 0,
+  "name": "study-1",
+  "description": "d-1",
+  "startdate": "1985-04-12",
+  "enddate": "1985-04-12"
 }
