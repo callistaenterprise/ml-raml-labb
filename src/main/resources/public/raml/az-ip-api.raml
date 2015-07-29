@@ -9,39 +9,11 @@ securitySchemes:
 securedBy: [basic]
 
 schemas:
-  - study: !include study/study.schema
-  - studies: |
-     {
-        "type": "array",
-        "$schema": "http://json-schema.org/draft-03/schema",
-       "description": "a collection of sudies",
-        "items": { "$ref": "study" }
-     }
-  - patient: !include patient.schema
-  - patients: |
-     {
-        "type": "array",
-        "$schema": "http://json-schema.org/draft-03/schema",
-        "description": "a collection of patients",
-        "items": { "$ref": "patient" }
-     }
-  - error: |
-     {
-        "type": "object",
-        "$schema": "http://json-schema.org/draft-03/schema",
-        "id": "http://jsonschema.net",
-        "required":false,
-        "properties": {
-           "code": {
-             "type": "integer",
-             "required":true
-           },
-           "message": {
-             "type": "string",
-             "required":true
-           }
-        }
-     }
+  - study:    !include study/study.schema
+  - studies:  !include study/studies.schema
+  - patient:  !include patient/patient.schema
+  - patients: !include patient/patients.schema
+  - error:    !include common/error.schema
 
 resourceTypes:
 
@@ -231,8 +203,8 @@ traits:
 /patients:
   type:
     collection:
-      exampleCollection: !include patients.sample
-      exampleItem: !include patient-new.sample
+      exampleCollection: !include patient/patients.sample
+      exampleItem: !include patient/patient-new.sample
   get:
     is: [
           searchable: {description: "with valid searchable fields: lastName", example: "[\"lastName\", \"l\", \"matches\"]"},
@@ -242,7 +214,7 @@ traits:
   /{username}:
     type:
       collection-item:
-        exampleItem: !include patient-retrieve.sample
+        exampleItem: !include patient/patient-retrieve.sample
 
 /carers:
   post:
