@@ -6,7 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 
 @Entity
-public class Patient extends AbstractEntity {
+public class JpaPatient extends AbstractEntity {
 
     @Column(unique=true)
     private String username;
@@ -28,7 +28,7 @@ public class Patient extends AbstractEntity {
      * @param weight
      * @param height
      */
-    public Patient(String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
+    public JpaPatient(String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
 
         Assert.hasText(username);
         Assert.hasText(firstname);
@@ -54,7 +54,7 @@ public class Patient extends AbstractEntity {
      * @param weight
      * @param height
      */
-    public Patient(String id, int version, String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
+    public JpaPatient(String id, int version, String username, String patientID, String firstname, String lastname, Integer weight, Integer height) {
         this(username, patientID, firstname, lastname, weight, height);
         setIdAndVersionForExistingEntity(id, version);
     }
@@ -62,7 +62,7 @@ public class Patient extends AbstractEntity {
     /**
      * The default constructor is required by the JPA implementation, but can be set protected to protect is from public visibility
      */
-    protected Patient() {}
+    protected JpaPatient() {}
 
     public String getUsername() {
         return username;

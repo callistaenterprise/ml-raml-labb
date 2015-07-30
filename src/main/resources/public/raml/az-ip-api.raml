@@ -58,11 +58,16 @@ traits:
       exampleItem: !include patient/patient-new.sample
   get:
     is: [
-          searchable: {description: "with valid searchable fields: lastName", example: "[\"lastName\", \"l\", \"matches\"]"},
           orderable: {fieldsList: "username, firstName, lastName"},
           pageable
         ]
-  /{username}:
+    queryParameters:
+      username:
+        description: "Search by username"
+        example: U11
+        required: false
+        type: string
+  /{id}:
     type:
       collectionItem:
         exampleItem: !include patient/patient-retrieve.sample

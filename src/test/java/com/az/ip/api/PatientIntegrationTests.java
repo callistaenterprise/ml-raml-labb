@@ -2,6 +2,8 @@ package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Patient;
+import com.az.ip.api.gen.model.Study;
+import com.az.ip.api.persistence.jpa.JpaPatient;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -50,14 +52,16 @@ public class PatientIntegrationTests {
 	private RestTemplate restTemplate = null;
     private String baseUrl = null;
 
-    private final static int MIN_PATIENT_NO = 11;
-    private final static int MAX_PATIENT_NO = 40;
-    private final static int NO_OF_PATIENTS = MAX_PATIENT_NO - MIN_PATIENT_NO + 1;
+    private final static int MIN_NO = 11;
+    private final static int MAX_NO = 40;
+    private final static int NO_OF_ENTITIES = MAX_NO - MIN_NO + 1;
 
     @Before
     public void setupDb() {
         repository.deleteAll();
-        for (int i = MIN_PATIENT_NO; i <= MAX_PATIENT_NO; i++) {
+
+        // Insert NO_OF_ENTITIES entities in the database
+        for (int i = MIN_NO; i <= MAX_NO; i++) {
             repository.save(createTestDbPatient(getUsername(i)));
         }
         LOG.info("Created {} test patients", repository.count());
@@ -77,30 +81,30 @@ public class PatientIntegrationTests {
     @Test
     public void testPostPatient() {
 
-        Patient newPatient = createTestApiPatient(getUsername((MAX_PATIENT_NO + 1)));
-        ResponseEntity entity = restTemplate.postForEntity(baseUrl, newPatient, Patient.class);
+        Patient newEntity = createTestApiEntity(getUsername((MAX_NO + 1)));
+        ResponseEntity entity = restTemplate.postForEntity(baseUrl, newEntity, Patient.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertNull(entity.getBody());
 
         // Verify state in db
-        assertEquals(NO_OF_PATIENTS + 1, repository.count());
+        assertEquals(NO_OF_ENTITIES + 1, repository.count());
     }
 
     @Test
     public void testPostPatientDuplicateError() {
 
-        Patient newPatient = createTestApiPatient(getUsername(MIN_PATIENT_NO));
-        ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newPatient, Error.class);
+        Patient newEntity = createTestApiEntity(getUsername(MIN_NO));
+        ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newEntity, Error.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.CONFLICT, entity.getStatusCode());
         assertNotNull(entity.getBody());
         // TODO: Add verification of the fields content in the Error-object
 
-        // Verify state in db
-        assertEquals(NO_OF_PATIENTS, repository.count());
+        // Verify state in db, i.e. no new entity in the database
+        assertEquals(NO_OF_ENTITIES, repository.count());
     }
 
     @Test
@@ -112,28 +116,28 @@ public class PatientIntegrationTests {
 
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertEquals(NO_OF_PATIENTS, body.length);
+        assertEquals(NO_OF_ENTITIES, body.length);
 
-        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO and in ascending order
-        final AtomicInteger userId = new AtomicInteger(MIN_PATIENT_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndIncrement()), p.getUsername()));
+        // Verify that we got patients with the expected usernames, i.e. starting with MIN_NO and in ascending order
+        final AtomicInteger id = new AtomicInteger(MIN_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getUsername(id.getAndIncrement()), e.getUsername()));
 
     }
 
     @Test
     public void testGetPatientsDescending() {
 
-        // Ask for all patients, e.g. set size to -1
+        // Ask for all patients in descending order, e.g. set size to -1
         ResponseEntity<Patient[]> entity = restTemplate.getForEntity(baseUrl + "?size=-1&orderBy=username&order=desc", Patient[].class);
         Patient[] body = entity.getBody();
 
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertEquals(NO_OF_PATIENTS, body.length);
+        assertEquals(NO_OF_ENTITIES, body.length);
 
-        // Verify that we got patients with the expected username's, i.e. starting with MAX_PATIENT_NO and in descending order
-        final AtomicInteger userId = new AtomicInteger(MAX_PATIENT_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndDecrement()), p.getUsername()));
+        // Verify that we got patients with the expected usernames, i.e. starting with MAX_NO and in descending order
+        final AtomicInteger id = new AtomicInteger(MAX_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getUsername(id.getAndDecrement()), e.getUsername()));
 
     }
 
@@ -152,9 +156,9 @@ public class PatientIntegrationTests {
         // Verify that we only got the first patients as specified by LIMIT
         assertEquals(SIZE, body.length);
 
-        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO and in ascending order
-        final AtomicInteger userId = new AtomicInteger(MIN_PATIENT_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndIncrement()), p.getUsername()));
+        // Verify that we got patients with the expected username's, i.e. starting with MIN_NO and in ascending order
+        final AtomicInteger id = new AtomicInteger(MIN_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getUsername(id.getAndIncrement()), e.getUsername()));
     }
 
     @Test
@@ -172,9 +176,9 @@ public class PatientIntegrationTests {
         // Verify that we only got the first patients as specified by LIMIT
         assertEquals(SIZE, body.length);
 
-        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO and in ascending order
-        final AtomicInteger userId = new AtomicInteger(MAX_PATIENT_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndDecrement()), p.getUsername()));
+        // Verify that we got patients with the expected username's, i.e. starting with MIN_NO and in ascending order
+        final AtomicInteger id = new AtomicInteger(MAX_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getUsername(id.getAndDecrement()), e.getUsername()));
     }
 
     @Test
@@ -193,9 +197,9 @@ public class PatientIntegrationTests {
         // Verify that we only got the first patients as specified by LIMIT
         assertEquals(SIZE, body.length);
 
-        // Verify that we got patients with the expected username's, i.e. starting with MIN_PATIENT_NO plus the offset given by PAGE and SIZE (skipping PAGE*SIZE patients)
-        final AtomicInteger userId = new AtomicInteger(MIN_PATIENT_NO + PAGE*SIZE);
-        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndIncrement()), p.getUsername()));
+        // Verify that we got patients with the expected username's, i.e. starting with MIN_NO plus the offset given by PAGE and SIZE (skipping PAGE*SIZE patients)
+        final AtomicInteger id = new AtomicInteger(MIN_NO + PAGE*SIZE);
+        Arrays.stream(body).forEach(e -> assertEquals(getUsername(id.getAndIncrement()), e.getUsername()));
     }
 
     @Test
@@ -214,9 +218,9 @@ public class PatientIntegrationTests {
         // Verify that we only got the first patients as specified by LIMIT
         assertEquals(SIZE, body.length);
 
-        // Verify that we got patients with the expected username's, i.e. starting with MAX_PATIENT_NO minus the offset given by PAGE and SIZE (skipping PAGE*SIZE patients)
-        final AtomicInteger userId = new AtomicInteger(MAX_PATIENT_NO - PAGE*SIZE);
-        Arrays.stream(body).forEach(p -> assertEquals(getUsername(userId.getAndDecrement()), p.getUsername()));
+        // Verify that we got patients with the expected username's, i.e. starting with MAX_NO minus the offset given by PAGE and SIZE (skipping PAGE*SIZE patients)
+        final AtomicInteger id = new AtomicInteger(MAX_NO - PAGE*SIZE);
+        Arrays.stream(body).forEach(e -> assertEquals(getUsername(id.getAndDecrement()), e.getUsername()));
     }
 
     @Test
@@ -233,149 +237,162 @@ public class PatientIntegrationTests {
     }
 
     @Test
-    public void testGetOnePatient() {
+    public void testGetOnePatientByName() {
 
-        String username = getUsername(MIN_PATIENT_NO);
+        // The helper method implement the whole test already...
+        lookupEntityByUsername(getUsername(MIN_NO));
+    }
 
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+    @Test
+    public void testGetOnePatientById() {
+
+        // First get the id of an entity with a known name
+        String username = getUsername(MIN_NO);
+        String id       = lookupEntityByUsername(username).getId();
+
+        // Now, perform the actual test
+        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + id, Patient.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertEquals(username, entity.getBody().getUsername());
+        assertEquals(id, entity.getBody().getId());
     }
 
     @Test
     public void testGetOnePatientNotFoundError() {
 
-        String usernameNotExisting = getUsername(MAX_PATIENT_NO + 1);
+        String idNotExisting = "NON-EXISTING-ID";
 
-        ResponseEntity<String> entity = restTemplate.getForEntity(baseUrl + "/" + usernameNotExisting, String.class);
+        ResponseEntity<String> entity = restTemplate.getForEntity(baseUrl + "/" + idNotExisting, String.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
         // TODO: Improve quality of this test, e.g. parse the json response...
-        assertTrue("Unexpected error message: " + entity.getBody(), entity.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + usernameNotExisting + "\""));
+        assertTrue("Unexpected error message: " + entity.getBody(), entity.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + idNotExisting + "\""));
     }
 
     @Test
     public void testUpdateOnePatient() {
 
-        String username = getUsername(MIN_PATIENT_NO);
+        String username = getUsername(MIN_NO);
 
         // Get the patient
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+        Patient entity = lookupEntityByUsername(username);
 
         // Verify Rest response
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        Patient p = entity.getBody();
-        assertEquals(username, p.getUsername());
-        assertEquals(getExpectedFirstname(username), p.getFirstname());
-        assertEquals(0, (int)p.getVersion());
+        assertEquals(username, entity.getUsername());
+        assertEquals(getExpectedFirstname(username), entity.getFirstname());
+        assertEquals(0, (int)entity.getVersion());
 
         // Update the first name
-        p.setFirstname("new-" + p.getFirstname());
-        restTemplate.put(baseUrl + "/" + username, p, Patient.class);
+        // TODO how do I check the result of the update???
+        entity.setFirstname("new-" + entity.getFirstname());
+        restTemplate.put(baseUrl + "/" + entity.getId(), entity, Patient.class);
 
         // Get the patient again
-        ResponseEntity<Patient> entityUpdated = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+        Patient entityUpdated = lookupEntityByUsername(username);
 
         // Verify Rest response of the updated patient
-        assertEquals(HttpStatus.OK, entityUpdated.getStatusCode());
-        Patient pUpdated = entityUpdated.getBody();
-        assertEquals(username, pUpdated.getUsername());
-        assertEquals("new-" + getExpectedFirstname(username), pUpdated.getFirstname());
-        assertEquals(1, (int) pUpdated.getVersion());
+        assertEquals(username, entityUpdated.getUsername());
+        assertEquals("new-" + getExpectedFirstname(username), entityUpdated.getFirstname());
+        assertEquals(1, (int) entityUpdated.getVersion());
     }
 
     @Test
     public void testUpdateOnePatientPessimisticLockError() {
 
-        String username = getUsername(MIN_PATIENT_NO);
+        String username = getUsername(MIN_NO);
 
         // Get the patient
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+        Patient entity = lookupEntityByUsername(username);
 
         // Verify Rest response
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        Patient p = entity.getBody();
-        assertEquals(username, p.getUsername());
-        assertEquals(getExpectedFirstname(username), p.getFirstname());
-        assertEquals(0, (int)p.getVersion());
+        assertEquals(username, entity.getUsername());
+        assertEquals(getExpectedFirstname(username), entity.getFirstname());
+        assertEquals(0, (int) entity.getVersion());
 
         // Update the first name
-        p.setFirstname("new-" + p.getFirstname());
-        restTemplate.put(baseUrl + "/" + username, p, Patient.class);
+        entity.setFirstname("new-" + entity.getFirstname());
+        // TODO: How do we get error http codes from a HTTP PUT using the restTemplate???
+        restTemplate.put(baseUrl + "/" + entity.getId(), entity, Patient.class);
 
         // Get the patient again
-        ResponseEntity<Patient> entityUpdated = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+        Patient entityUpdated = lookupEntityByUsername(username);
 
         // Verify Rest response of the updated patient
-        assertEquals(HttpStatus.OK, entityUpdated.getStatusCode());
-        Patient pUpdated = entityUpdated.getBody();
-        assertEquals(username, pUpdated.getUsername());
-        assertEquals("new-" + getExpectedFirstname(username), pUpdated.getFirstname());
-        assertEquals(1, (int) pUpdated.getVersion());
+        assertEquals(username, entityUpdated.getUsername());
+        assertEquals("new-" + getExpectedFirstname(username), entityUpdated.getFirstname());
+        assertEquals(1, (int) entityUpdated.getVersion());
 
 
 
-
-        // Update the patient again using the now outdated entity
-        p.setFirstname("2-" + p.getFirstname());
+        // Update the patient again using the now outdated initial entity
+        entity.setFirstname("2-" + entity.getFirstname());
 
         // TODO: How do we get error http codes from a HTTP PUT using the restTemplate???
-        restTemplate.put(baseUrl + "/" + username, p, Patient.class);
+        restTemplate.put(baseUrl + "/" + entity.getId(), entity, Patient.class);
 
         // Get the patient again
-        ResponseEntity<Patient> entityUpdatedAgain = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
+        Patient entityUpdatedAgain = lookupEntityByUsername(username);
 
         // Verify Rest response of the updated patient, i.e. verify that the second stale update did not succeed
-        assertEquals(HttpStatus.OK, entityUpdatedAgain.getStatusCode());
-        Patient pUpdatedagain = entityUpdatedAgain.getBody();
-        assertEquals(username, pUpdatedagain.getUsername());
-        assertEquals("new-" + getExpectedFirstname(username), pUpdatedagain.getFirstname());
-        assertEquals(1, (int) pUpdatedagain.getVersion());
+        assertEquals(username, entityUpdatedAgain.getUsername());
+        assertEquals("new-" + getExpectedFirstname(username), entityUpdatedAgain.getFirstname());
+        assertEquals(1, (int) entityUpdatedAgain.getVersion());
     }
 
     @Test
     public void testDeletePatient() {
-        String username = getUsername(MIN_PATIENT_NO);
+        String username = getUsername(MIN_NO);
 
         // Get the patient
-        ResponseEntity<Patient> entity = restTemplate.getForEntity(baseUrl + "/" + username, Patient.class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.OK, entity.getStatusCode());
-        Patient p = entity.getBody();
-        assertEquals(username, p.getUsername());
+        Patient entity = lookupEntityByUsername(username);
 
         // Delete the patient
-        restTemplate.delete(baseUrl + "/" + username);
+        // TODO: How do we get error http codes from a HTTP DELETE using the restTemplate???
+        restTemplate.delete(baseUrl + "/" + entity.getId());
 
         // Verify state in db
-        assertEquals(NO_OF_PATIENTS - 1, repository.count());
+        assertEquals(NO_OF_ENTITIES - 1, repository.count());
 
-        // Get the patient again, should return a 404, NOT_FOUND
-        ResponseEntity<String> entityRemoved = restTemplate.getForEntity(baseUrl + "/" + username, String.class);
+        // Get the patient again, should return an empty list
+        ResponseEntity<Patient[]> entityRemoved = restTemplate.getForEntity(baseUrl + "?username=" + username, Patient[].class);
 
         // Verify Rest response
-        assertEquals(HttpStatus.NOT_FOUND, entityRemoved.getStatusCode());
-        // TODO: Improve quality of this test, e.g. parse the json response...
-        assertTrue("Unexpected error message: " + entityRemoved.getBody(), entityRemoved.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + username + "\""));
+        assertEquals(HttpStatus.OK, entityRemoved.getStatusCode());
+        assertEquals(0, entityRemoved.getBody().length);
     }
 
     @Test
     public void testDeleteNotExistingPatient() {
 
-        String usernameNotExisting = getUsername(MAX_PATIENT_NO + 1);
+        String idNotExisting = "NON-EXISTING-ID";
 
         // Verify state in db
-        assertEquals(NO_OF_PATIENTS, repository.count());
+        assertEquals(NO_OF_ENTITIES, repository.count());
 
         // Try to delete the non-existing patient
-        restTemplate.delete(baseUrl + "/" + usernameNotExisting);
+        // TODO: How do we get error http codes from a HTTP DELETE using the restTemplate???
+        restTemplate.delete(baseUrl + "/" + idNotExisting);
 
         // Verify state in db, i.e. no change
-        assertEquals(NO_OF_PATIENTS, repository.count());
+        assertEquals(NO_OF_ENTITIES, repository.count());
+    }
+
+    private Patient lookupEntityByUsername(String username) {
+
+        ResponseEntity<Patient[]> entities = restTemplate.getForEntity(baseUrl + "?username=" + username, Patient[].class);
+
+        // Verify Rest response
+        assertEquals(HttpStatus.OK, entities.getStatusCode());
+        assertEquals(1, entities.getBody().length);
+
+        Patient entity = entities.getBody()[0];
+        assertEquals(username, entity.getUsername());
+        assertNotNull(entity.getId());
+
+        return entity;
     }
 
     private String getExpectedFirstname(String username) {
@@ -386,11 +403,11 @@ public class PatientIntegrationTests {
         return "U" + i;
     }
 
-    private com.az.ip.api.persistence.jpa.Patient createTestDbPatient(String username) {
-        return new com.az.ip.api.persistence.jpa.Patient(username, "1234", "F1", "L1", 100, 200);
+    private JpaPatient createTestDbPatient(String username) {
+        return new JpaPatient(username, "1234", "F1", "L1", 100, 200);
     }
 
-    private Patient createTestApiPatient(String username) {
+    private Patient createTestApiEntity(String username) {
         return new Patient().withUsername(username).withPatientID("1234").withFirstname("F1").withLastname("L1").withWeight(100).withHeight(200);
     }
 

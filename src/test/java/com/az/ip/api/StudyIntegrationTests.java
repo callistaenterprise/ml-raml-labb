@@ -59,6 +59,8 @@ public class StudyIntegrationTests {
     @Before
     public void setupDb() {
         repository.deleteAll();
+
+        // Insert NO_OF_ENTITIES entities in the database
         for (int i = MIN_NO; i <= MAX_NO; i++) {
             repository.save(createTestDbEntity(getName(i)));
         }
@@ -93,15 +95,15 @@ public class StudyIntegrationTests {
     @Test
     public void testPostStudyDuplicateError() {
 
-        Study newStudy = createTestApiEntity(getName(MIN_NO));
-        ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newStudy, Error.class);
+        Study newEntity = createTestApiEntity(getName(MIN_NO));
+        ResponseEntity<Error> entity = restTemplate.postForEntity(baseUrl, newEntity, Error.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.CONFLICT, entity.getStatusCode());
         assertNotNull(entity.getBody());
         // TODO: Add verification of the fields content in the Error-object
 
-        // Verify state in db
+        // Verify state in db, i.e. no new entity in the database
         assertEquals(NO_OF_ENTITIES, repository.count());
     }
 
@@ -116,16 +118,16 @@ public class StudyIntegrationTests {
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertEquals(NO_OF_ENTITIES, body.length);
 
-        // Verify that we got Studies with the expected name's, i.e. starting with MIN_NO and in ascending order
-        final AtomicInteger userId = new AtomicInteger(MIN_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getName(userId.getAndIncrement()), p.getName()));
+        // Verify that we got studies with the expected names, i.e. starting with MIN_NO and in ascending order
+        final AtomicInteger id = new AtomicInteger(MIN_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getName(id.getAndIncrement()), e.getName()));
 
     }
 
     @Test
     public void testGetStudiesDescending() {
 
-        // Ask for all Studies, e.g. set size to -1
+        // Ask for all studies in descending order, e.g. set size to -1
         ResponseEntity<Study[]> entity = restTemplate.getForEntity(baseUrl + "?size=-1&orderBy=name&order=desc", Study[].class);
         Study[] body = entity.getBody();
 
@@ -133,9 +135,9 @@ public class StudyIntegrationTests {
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         assertEquals(NO_OF_ENTITIES, body.length);
 
-        // Verify that we got Studies with the expected name's, i.e. starting with MAX_NO and in descending order
-        final AtomicInteger userId = new AtomicInteger(MAX_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getName(userId.getAndDecrement()), p.getName()));
+        // Verify that we got Studies with the expected names, i.e. starting with MAX_NO and in descending order
+        final AtomicInteger id = new AtomicInteger(MAX_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getName(id.getAndDecrement()), e.getName()));
 
     }
 
@@ -155,8 +157,8 @@ public class StudyIntegrationTests {
         assertEquals(SIZE, body.length);
 
         // Verify that we got Studies with the expected name's, i.e. starting with MIN_NO and in ascending order
-        final AtomicInteger userId = new AtomicInteger(MIN_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getName(userId.getAndIncrement()), p.getName()));
+        final AtomicInteger id = new AtomicInteger(MIN_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getName(id.getAndIncrement()), e.getName()));
     }
 
     @Test
@@ -175,8 +177,8 @@ public class StudyIntegrationTests {
         assertEquals(SIZE, body.length);
 
         // Verify that we got Studies with the expected name's, i.e. starting with MIN_NO and in ascending order
-        final AtomicInteger userId = new AtomicInteger(MAX_NO);
-        Arrays.stream(body).forEach(p -> assertEquals(getName(userId.getAndDecrement()), p.getName()));
+        final AtomicInteger id = new AtomicInteger(MAX_NO);
+        Arrays.stream(body).forEach(e -> assertEquals(getName(id.getAndDecrement()), e.getName()));
     }
 
     @Test
@@ -196,8 +198,8 @@ public class StudyIntegrationTests {
         assertEquals(SIZE, body.length);
 
         // Verify that we got Studies with the expected name's, i.e. starting with MIN_NO plus the offset given by PAGE and SIZE (skipping PAGE*SIZE Studies)
-        final AtomicInteger userId = new AtomicInteger(MIN_NO + PAGE*SIZE);
-        Arrays.stream(body).forEach(p -> assertEquals(getName(userId.getAndIncrement()), p.getName()));
+        final AtomicInteger id = new AtomicInteger(MIN_NO + PAGE*SIZE);
+        Arrays.stream(body).forEach(e -> assertEquals(getName(id.getAndIncrement()), e.getName()));
     }
 
     @Test
@@ -217,8 +219,8 @@ public class StudyIntegrationTests {
         assertEquals(SIZE, body.length);
 
         // Verify that we got Studies with the expected name's, i.e. starting with MAX_NO minus the offset given by PAGE and SIZE (skipping PAGE*SIZE Studies)
-        final AtomicInteger userId = new AtomicInteger(MAX_NO - PAGE*SIZE);
-        Arrays.stream(body).forEach(p -> assertEquals(getName(userId.getAndDecrement()), p.getName()));
+        final AtomicInteger id = new AtomicInteger(MAX_NO - PAGE*SIZE);
+        Arrays.stream(body).forEach(p -> assertEquals(getName(id.getAndDecrement()), p.getName()));
     }
 
     @Test
@@ -260,14 +262,14 @@ public class StudyIntegrationTests {
     @Test
     public void testGetOneStudyNotFoundError() {
 
-        String nameNotExisting = getName(MAX_NO + 1);
+        String idNotExisting = "NON-EXISTING-ID";
 
-        ResponseEntity<String> entity = restTemplate.getForEntity(baseUrl + "/" + nameNotExisting, String.class);
+        ResponseEntity<String> entity = restTemplate.getForEntity(baseUrl + "/" + idNotExisting, String.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.NOT_FOUND, entity.getStatusCode());
         // TODO: Improve quality of this test, e.g. parse the json response...
-        assertTrue("Unexpected error message: " + entity.getBody(), entity.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + nameNotExisting + "\""));
+        assertTrue("Unexpected error message: " + entity.getBody(), entity.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + idNotExisting + "\""));
     }
 
 
@@ -276,7 +278,7 @@ public class StudyIntegrationTests {
 
         String name = getName(MIN_NO);
 
-        // Get the Study
+        // Get the study
         Study entity = lookupEntityByName(name);
 
         // Verify Rest response
@@ -292,7 +294,7 @@ public class StudyIntegrationTests {
         // Get the Study again
         Study entityUpdated = lookupEntityByName(name);
 
-        // Verify Rest response of the updated Study
+        // Verify Rest response of the updated study
         assertEquals(name, entityUpdated.getName());
         assertEquals("new-" + getExpectedDescription(name), entityUpdated.getDescription());
         assertEquals(1, (int) entityUpdated.getVersion());
@@ -303,7 +305,7 @@ public class StudyIntegrationTests {
 
         String name = getName(MIN_NO);
 
-        // Get the Study
+        // Get the study
         Study entity = lookupEntityByName(name);
 
         // Verify Rest response
@@ -313,6 +315,7 @@ public class StudyIntegrationTests {
 
         // Update the first name
         entity.setDescription("new-" + entity.getDescription());
+        // TODO: How do we get error http codes from a HTTP PUT using the restTemplate???
         restTemplate.put(baseUrl + "/" + entity.getId(), entity, Study.class);
 
         // Get the Study again
@@ -325,7 +328,7 @@ public class StudyIntegrationTests {
 
 
 
-        // Update the Study again using the now outdated initl entity
+        // Update the Study again using the now outdated initial entity
         entity.setDescription("2-" + entity.getDescription());
 
         // TODO: How do we get error http codes from a HTTP PUT using the restTemplate???
@@ -346,17 +349,12 @@ public class StudyIntegrationTests {
         String name = getName(MIN_NO);
 
         // Get the Study
-        ResponseEntity<Study[]> entities = restTemplate.getForEntity(baseUrl + "?name=" + name, Study[].class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.OK, entities.getStatusCode());
-        assertEquals(1, entities.getBody().length);
-
-        Study entity = entities.getBody()[0];
-        assertEquals(name, entity.getName());
+        Study entity = lookupEntityByName(name);
 
         // Delete the Study
+        // TODO: How do we get error http codes from a HTTP DELETE using the restTemplate???
         restTemplate.delete(baseUrl + "/" + entity.getId());
+
         // Verify state in db
         assertEquals(NO_OF_ENTITIES - 1, repository.count());
 
@@ -366,23 +364,19 @@ public class StudyIntegrationTests {
         // Verify Rest response
         assertEquals(HttpStatus.OK, entityRemoved.getStatusCode());
         assertEquals(0, entityRemoved.getBody().length);
-
-
-//        assertEquals(HttpStatus.NOT_FOUND, entityRemoved.getStatusCode());
-//        // TODO: Improve quality of this test, e.g. parse the json response...
-//        assertTrue("Unexpected error message: " + entityRemoved.getBody(), entityRemoved.getBody().contains("\"status\":404,\"error\":\"Not Found\",\"message\":\"Not Found\",\"path\":\"" + BASE_URI + "/" + name + "\""));
     }
 
     @Test
     public void testDeleteNotExistingStudy() {
 
-        String usernameNotExisting = getName(MAX_NO + 1);
+        String idNotExisting = "NON-EXISTING-ID";
 
         // Verify state in db
         assertEquals(NO_OF_ENTITIES, repository.count());
 
         // Try to delete the non-existing Study
-        restTemplate.delete(baseUrl + "/" + usernameNotExisting);
+        // TODO: How do we get error http codes from a HTTP DELETE using the restTemplate???
+        restTemplate.delete(baseUrl + "/" + idNotExisting);
 
         // Verify state in db, i.e. no change
         assertEquals(NO_OF_ENTITIES, repository.count());
@@ -400,7 +394,6 @@ public class StudyIntegrationTests {
         assertEquals(name, entity.getName());
         assertNotNull(entity.getId());
 
-        // Now, get the id and perform the actual test
         return entity;
     }
 
