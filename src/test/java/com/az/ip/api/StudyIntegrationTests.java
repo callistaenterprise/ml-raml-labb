@@ -1,7 +1,7 @@
 package com.az.ip.api;
 
-import com.az.ip.api.model.Error;
-import com.az.ip.api.model.Study;
+import com.az.ip.api.gen.model.Error;
+import com.az.ip.api.gen.model.Study;
 import com.az.ip.api.persistence.jpa.JpaStudy;
 import com.az.ip.api.persistence.jpa.StudyRepository;
 import org.junit.Before;

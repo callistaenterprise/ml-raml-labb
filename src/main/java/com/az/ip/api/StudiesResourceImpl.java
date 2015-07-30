@@ -1,12 +1,10 @@
 package com.az.ip.api;
 
-import static java.util.Collections.singletonList;
-
-import com.az.ip.api.model.*;
-import com.az.ip.api.model.Error;
+import com.az.ip.api.gen.model.Error;
+import com.az.ip.api.gen.model.Study;
+import com.az.ip.api.gen.resource.StudiesResource;
 import com.az.ip.api.persistence.jpa.JpaStudy;
 import com.az.ip.api.persistence.jpa.StudyRepository;
-import com.az.ip.api.resource.Studies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -17,16 +15,17 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Created by magnus on 11/07/15.
  */
 @Path("studies")
-public class StudyResource implements Studies {
+public class StudiesResourceImpl implements StudiesResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StudyResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StudiesResourceImpl.class);
 
     private static final List<String> ORDER_FIELDS  = Arrays.asList(new String[]{"name"});
     private static final String DEFAULT_ORDER_FIELD = "name";
@@ -42,7 +41,7 @@ public class StudyResource implements Studies {
     public GetStudiesResponse getStudies(
             @QueryParam("name")                       String name,
             @QueryParam("orderBy")                    String orderBy,
-            @QueryParam("order") @DefaultValue("asc") Studies.Order order,
+            @QueryParam("order") @DefaultValue("asc") Order order,
             @QueryParam("page")  @DefaultValue("0")   long page,
             @QueryParam("size")  @DefaultValue("20")  long size) {
 
@@ -78,7 +77,7 @@ public class StudyResource implements Studies {
         } catch (RuntimeException ex) {
             // TODO: Add checks for common erros such as duplicate detectien and improve error message!
             LOG.error("postPatient request failed, exception: [{}], cause: []{}", ex, ex.getCause());
-            return PostStudiesResponse.withJsonConflict(new com.az.ip.api.model.Error().withCode(-1).withMessage(ex.getMessage()));
+            return PostStudiesResponse.withJsonConflict(new Error().withCode(-1).withMessage(ex.getMessage()));
         }
     }
 

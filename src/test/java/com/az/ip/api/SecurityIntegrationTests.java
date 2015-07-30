@@ -1,8 +1,5 @@
 package com.az.ip.api;
 
-import com.az.ip.api.model.Error;
-import com.az.ip.api.model.Patient;
-import com.az.ip.api.persistence.jpa.PatientRepository;
 import org.apache.http.NoHttpResponseException;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -21,10 +18,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -66,7 +59,7 @@ public class SecurityIntegrationTests {
     public void testLoginErrorNoHttps() {
         try {
             // Make a request using http instead of https, expect an error
-            ResponseEntity<Patient[]> entity = new TestRestTemplate().getForEntity("http://localhost:" + port + BASE_URI, Patient[].class);
+            ResponseEntity<String> entity = new TestRestTemplate().getForEntity("http://localhost:" + port + BASE_URI, String.class);
             fail("Expected an error due to http access to a https protected resource");
 
         } catch (ResourceAccessException ex) {

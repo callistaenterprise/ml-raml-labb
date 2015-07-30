@@ -1,0 +1,13 @@
+      queryParameters:
+        page:
+          description: Skip over a number of pages by specifying the first page for the query, specify 0 for the start page
+          type: integer
+          required: false
+          example: 0
+          default: 0
+        size:
+          description: Specify the size of each page, i.e. the number of elements per page, specify -1 to get all elements (i.e. disable paging)
+          type: integer
+          required: false
+          example: 20
+          default: 20

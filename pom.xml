@@ -91,13 +91,18 @@
               <target>${java.version}</target>
           </configuration>
       </plugin>
+
       <plugin>
           <groupId>org.raml.plugins</groupId>
           <artifactId>raml-jaxrs-maven-plugin</artifactId>
-          <version>1.3.2</version>
+          <!--<version>1.3.2</version>-->
+          <version>1.3.4-SNAPSHOT</version>
           <configuration>
-              <sourceDirectory>src/main/resources/public/raml</sourceDirectory>
-              <basePackageName>com.az.ip.api</basePackageName>
+              <!--<sourceDirectory>src/main/resources/public/raml</sourceDirectory>-->
+              <sourcePaths>
+                  <param>src/main/resources/public/raml/az-ip-api.raml</param>
+              </sourcePaths>
+              <basePackageName>com.az.ip.api.gen</basePackageName>
               <jaxrsVersion>2.0</jaxrsVersion>
               <useJsr303Annotations>false</useJsr303Annotations>
               <jsonMapper>jackson2</jsonMapper>
@@ -175,6 +180,8 @@
 
                             <requirePluginVersions>
                                 <message>### Best Practice is to always define plugin versions! ###</message>
+                                <!-- For org.raml.plugins/raml-jaxrs-maven-plugin -->
+                                <banSnapshots>false</banSnapshots>
                             </requirePluginVersions>
 
                             <requireMavenVersion>

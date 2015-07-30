@@ -1,9 +1,9 @@
 package com.az.ip.api;
 
-import com.az.ip.api.model.Error;
-import com.az.ip.api.model.Patient;
+import com.az.ip.api.gen.model.Error;
+import com.az.ip.api.gen.model.Patient;
+import com.az.ip.api.gen.resource.PatientsResource;
 import com.az.ip.api.persistence.jpa.PatientRepository;
-import com.az.ip.api.resource.Patients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -21,9 +21,9 @@ import java.util.List;
  * Created by magnus on 11/07/15.
  */
 @Path("patients")
-public class PatientResource implements Patients {
+public class PatientsResourceImpl implements PatientsResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PatientResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PatientsResourceImpl.class);
 
     private static final List<String> ORDER_FIELDS  = Arrays.asList(new String[]{"username", "firstName", "lastName"});
     private static final String DEFAULT_ORDER_FIELD = "username";
@@ -53,10 +53,10 @@ public class PatientResource implements Patients {
     @Override
     @GET
     @Produces("application/json")
-    public Patients.GetPatientsResponse getPatients(
+    public GetPatientsResponse getPatients(
         @QueryParam("query")                      String query,
         @QueryParam("orderBy")                    String orderBy,
-        @QueryParam("order") @DefaultValue("asc") Patients.Order order,
+        @QueryParam("order") @DefaultValue("asc") Order order,
         @QueryParam("page")  @DefaultValue("0")   long page,
         @QueryParam("size")  @DefaultValue("10")  long size) {
 
@@ -69,7 +69,7 @@ public class PatientResource implements Patients {
         if (!ORDER_FIELDS.contains(orderBy)) {
             String errMsg = "Order field [" + orderBy + "] must be on of: " + ORDER_FIELDS;
             LOG.error("getPatients request failed: " + errMsg);
-            return Patients.GetPatientsResponse.withJsonUnprocessableEntity(new Error().withCode(-1).withMessage(errMsg));
+            return GetPatientsResponse.withJsonUnprocessableEntity(new Error().withCode(-1).withMessage(errMsg));
         }
 
         return GetPatientsResponse.withJsonOK(findAll(orderBy, order, page, size));
@@ -92,14 +92,14 @@ public class PatientResource implements Patients {
      * @throws Exception
      */
     @Override
-    public Patients.PostPatientsResponse postPatients(String accessToken, Patient entity) throws Exception {
+    public PostPatientsResponse postPatients(String accessToken, Patient entity) throws Exception {
         try {
             repository.save(toNewJpaPatient(entity));
-            return Patients.PostPatientsResponse.withOK();
+            return PostPatientsResponse.withOK();
         } catch (RuntimeException ex) {
             // TODO: Add checks for common erros such as duplicate detectien and improve error message!
             LOG.error("postPatient request failed, exception: [{}], cause: []{}", ex, ex.getCause());
-            return Patients.PostPatientsResponse.withJsonConflict(new Error().withCode(-1).withMessage(ex.getMessage()));
+            return PostPatientsResponse.withJsonConflict(new Error().withCode(-1).withMessage(ex.getMessage()));
         }
     }
 
@@ -111,7 +111,7 @@ public class PatientResource implements Patients {
      * @throws Exception
      */
     @Override
-    public Patients.GetPatientsByUsernameResponse getPatientsByUsername(String username) throws Exception {
+    public GetPatientsByUsernameResponse getPatientsByUsername(String username) throws Exception {
         LOG.debug("Get patient with username: {}", username);
         com.az.ip.api.persistence.jpa.Patient p = repository.findByUsername(username);
 

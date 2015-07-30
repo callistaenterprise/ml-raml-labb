@@ -1,15 +1,13 @@
 package com.az.ip.api.persistence.jpa;
 
-import static javax.persistence.TemporalType.DATE;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.util.Date;
+
+import static javax.persistence.TemporalType.DATE;
 
 @Entity
 public class JpaStudy extends AbstractEntity {

@@ -16,163 +16,14 @@ schemas:
   - error:    !include common/error.schema
 
 resourceTypes:
-
-  - readOnlyCollection:
-      description: Collection of available <<resourcePathName>>.
-      get:
-        description: Get a list of <<resourcePathName>>.
-        responses:
-          200:
-            body:
-              application/json:
-                example: |
-                  <<exampleCollection>>
-
-  - collection:
-      description: Collection of available <<resourcePathName>>.
-      get:
-        description: Get a list of <<resourcePathName>>.
-        responses:
-          200:
-            body:
-              application/json:
-                schema: <<resourcePathName|!pluralize>>
-                example: |
-                  <<exampleCollection>>
-          # Invalid parameters in request
-          422:
-            body:
-              application/json:
-                schema: error
-      post:
-        description: | 
-          Add a new <<resourcePathName|!singularize>>.
-        queryParameters:
-          access_token:
-            description: "The access token provided by the authentication application"
-            example: AABBCCDD
-            required: true
-            type: string
-        body:
-          application/json:
-            schema: <<resourcePathName|!singularize>>
-            example: |
-              <<exampleItem>>
-        responses:
-          200:
-#            body:
-#              application/json:
-#                example: |
-#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
-
-          # Duplicate error
-          409:
-            body:
-              application/json:
-                schema: error
-
-  - collection-item:
-      description: Entity representing a <<resourcePathName|!singularize>>
-      get:
-        description: |
-          Get the <<resourcePathName|!singularize>>
-          with <<resourcePathName|!singularize>>Id =
-          {<<resourcePathName|!singularize>>Id}
-        responses:
-          200:
-            body:
-              application/json:
-                schema: <<resourcePathName|!singularize>>
-                example: |
-                  <<exampleItem>>
-          404:
-#            body:
-#              application/json:
-#                example: |
-#                  {"message": "<<resourcePathName|!singularize>> not found" }
-      put:
-        description: |
-          Updates an existing <<resourcePathName|!singularize>>.
-        queryParameters:
-          access_token:
-            description: "The access token provided by the authentication application"
-            example: AABBCCDD
-            required: true
-            type: string
-        body:
-          application/json:
-            schema: <<resourcePathName|!singularize>>
-            example: |
-              <<exampleItem>>
-        responses:
-          200:
-#            body:
-#              application/json:
-#                example: |
-#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
-
-          # Invalid parameters in request
-          422:
-            body:
-              application/json:
-                schema: error
-      delete:
-        description: |
-          Deletes an existing <<resourcePathName|!singularize>>.
-        queryParameters:
-          access_token:
-            description: "The access token provided by the authentication application"
-            example: AABBCCDD
-            required: true
-            type: string
-        body:
-        responses:
-          200:
-#            body:
-#              application/json:
-#                example: |
-#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
-
-          # Invalid parameters in request
-          422:
-            body:
-              application/json:
-                schema: error
+  - readOnlyCollection: !include common/resourceTypes/readOnlyCollection.raml
+  - collection:         !include common/resourceTypes/collection.raml
+  - collectionItem:     !include common/resourceTypes/collectionItem.raml
 
 traits:
-  - searchable:
-      queryParameters:
-        query:
-          description: |
-            JSON array [{"field1","value1","operator1"},{"field2","value2","operator2"},...,{"fieldN","valueN","operatorN"}] <<description>>
-          example: |
-            <<example>>
-  - orderable:
-      queryParameters:
-        orderBy:
-          description: |
-            Order by field: <<fieldsList>>
-          type: string
-          required: false
-        order:
-          description: Order
-          enum: [asc, desc]
-          default: asc
-          required: false
-  - pageable:
-      queryParameters:
-        page:
-          description: Skip over a number of pages by specifying the first page for the query, specify 0 for the start page
-          type: integer
-          required: false
-          example: 0
-          default: 0
-        size:
-          description: Specify the size of each page, i.e. the number of elements per page, specify -1 to get all elements (i.e. disable paging)
-          type: integer
-          required: false
-          example: 20
-          default: 20
+  - searchable: !include common/traits/searchable.raml
+  - orderable:  !include common/traits/orderable.raml
+  - pageable:   !include common/traits/pageable.raml
 
 /coutries:
 
@@ -194,7 +45,7 @@ traits:
         type: string
   /{id}:
     type:
-      collection-item:
+      collectionItem:
         exampleItem: !include study/study-retrieve.sample
 
 /applications:
@@ -213,7 +64,7 @@ traits:
         ]
   /{username}:
     type:
-      collection-item:
+      collectionItem:
         exampleItem: !include patient/patient-retrieve.sample
 
 /carers:
