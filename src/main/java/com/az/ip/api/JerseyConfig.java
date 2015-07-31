@@ -21,6 +21,7 @@ public class JerseyConfig extends ResourceConfig {
         }
 
         register(StudiesResourceImpl.class);
+        register(DoctorsResourceImpl.class);
         register(PatientsResourceImpl.class);
     }
 

@@ -16,10 +16,6 @@
       "type": "string",
       "required":true
     },
-    "doctorID": {
-      "type": "string",
-      "required": false
-    },
     "firstname": {
       "type": "string",
       "required": true
