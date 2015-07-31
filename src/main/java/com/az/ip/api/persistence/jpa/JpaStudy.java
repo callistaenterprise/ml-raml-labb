@@ -2,10 +2,10 @@ package com.az.ip.api.persistence.jpa;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Temporal;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import static javax.persistence.TemporalType.DATE;
 
@@ -22,6 +22,13 @@ public class JpaStudy extends AbstractEntity {
 
     @Temporal(DATE)
     private Date enddate;
+
+    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+    @JoinTable(
+        joinColumns={@JoinColumn(name="STUDY_ID")},
+        inverseJoinColumns={@JoinColumn(name="DOCTOR_ID")}
+    )
+    private Set<JpaDoctor> doctors = new HashSet<>();
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
@@ -84,5 +91,9 @@ public class JpaStudy extends AbstractEntity {
 
     public void setEnddate(Date enddate) {
         this.enddate = enddate;
+    }
+
+    public Set<JpaDoctor> getAssigendDoctors() {
+        return doctors;
     }
 }

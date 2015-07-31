@@ -61,7 +61,7 @@ public class DoctorIntegrationTests {
 
         // Insert NO_OF_ENTITIES entities in the database
         for (int i = MIN_NO; i <= MAX_NO; i++) {
-            repository.save(createTestDbDoctor(getUsername(i)));
+            repository.save(createTestDbEntity(getUsername(i)));
         }
         LOG.info("Created {} test doctors", repository.count());
     }
@@ -402,7 +402,7 @@ public class DoctorIntegrationTests {
         return "U" + i;
     }
 
-    private JpaDoctor createTestDbDoctor(String username) {
+    private JpaDoctor createTestDbEntity(String username) {
         return new JpaDoctor(username, "F1", "L1");
     }
 

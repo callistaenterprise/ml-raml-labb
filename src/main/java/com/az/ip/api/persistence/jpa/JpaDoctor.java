@@ -2,8 +2,9 @@ package com.az.ip.api.persistence.jpa;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class JpaDoctor extends AbstractEntity {
@@ -14,6 +15,8 @@ public class JpaDoctor extends AbstractEntity {
     private String firstname;
     private String lastname;
 
+    @ManyToMany(mappedBy="doctors", fetch = FetchType.EAGER)
+    private Set<JpaStudy> studies = new HashSet<>();
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
@@ -73,4 +76,9 @@ public class JpaDoctor extends AbstractEntity {
     public void setLastname(String lastname) {
         this.lastname = lastname;
     }
+
+    public Set<JpaStudy> getAssigendInStudies() {
+        return studies;
+    }
+
 }
