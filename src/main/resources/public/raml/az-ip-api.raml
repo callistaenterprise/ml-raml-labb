@@ -11,6 +11,8 @@ securedBy: [basic]
 schemas:
   - study:    !include study/study.schema
   - studies:  !include study/studies.schema
+  - doctor:   !include doctor/doctor.schema
+  - doctors:  !include doctor/doctors.schema
   - patient:  !include patient/patient.schema
   - patients: !include patient/patients.schema
   - error:    !include common/error.schema
@@ -50,6 +52,27 @@ traits:
 
 /applications:
 /sensors:
+
+/doctors:
+  type:
+    collection:
+      exampleCollection: !include doctor/doctors.sample
+      exampleItem: !include doctor/doctor-new.sample
+  get:
+    is: [
+          orderable: {fieldsList: "username, firstName, lastName"},
+          pageable
+        ]
+    queryParameters:
+      username:
+        description: "Search by username"
+        example: D11
+        required: false
+        type: string
+  /{id}:
+    type:
+      collectionItem:
+        exampleItem: !include doctor/doctor-retrieve.sample
 
 /patients:
   type:
@@ -118,4 +141,3 @@ traits:
                   "height": "202"
                 }
               ]
-/doctors:

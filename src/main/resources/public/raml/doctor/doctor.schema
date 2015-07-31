@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "http://jsonschema.net",
+  "required":false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "required":true
+    },
+    "version": {
+      "type": "integer",
+      "required":true
+    },
+    "username": {
+      "type": "string",
+      "required":true
+    },
+    "doctorID": {
+      "type": "string",
+      "required": false
+    },
+    "firstname": {
+      "type": "string",
+      "required": true
+    },
+    "lastname": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
