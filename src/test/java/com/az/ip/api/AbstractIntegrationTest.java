@@ -1,6 +1,5 @@
 package com.az.ip.api;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.TestRestTemplate;

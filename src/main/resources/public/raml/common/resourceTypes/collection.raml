@@ -29,11 +29,11 @@
               <<exampleItem>>
         responses:
           200:
-#            body:
-#              application/json:
-#                example: |
-#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
-
+            body:
+              application/json:
+                schema: <<resourcePathName|!singularize>>
+                example: |
+                  <<exampleItem>>
           # Duplicate error
           409:
             body:

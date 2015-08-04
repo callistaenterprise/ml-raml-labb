@@ -16,6 +16,28 @@ schemas:
   - patient:  !include patient/patient.schema
   - patients: !include patient/patients.schema
   - error:    !include common/error.schema
+  - id: |
+      {
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-03/schema",
+        "id": "http://jsonschema.net",
+        "required":false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "required":true
+          }
+        }
+      }
+  - ids: |
+      {
+          "type": "array",
+          "$schema": "http://json-schema.org/draft-03/schema",
+          "description": "a collection of id-refs",
+          "items": {
+              "$ref": "id"
+          }
+      }
 
 resourceTypes:
   - readOnlyCollection: !include common/resourceTypes/readOnlyCollection.raml
@@ -50,6 +72,41 @@ traits:
       collectionItem:
         exampleItem: !include study/study-retrieve.sample
 
+    /assignedDoctors:
+      post:
+        description: |
+          Add a ref to a doctor that is assigned to this study
+        body:
+          application/json:
+            schema: id
+            example: |
+              { "id" : "1234567890" }
+        responses:
+          # OK
+          200:
+
+          # Duplicate error
+          409:
+            body:
+              application/json:
+                schema: error
+      get:
+        description: Get a ref to each doctor that is assigned to this study
+        responses:
+          200:
+            body:
+              application/json:
+                schema: ids
+                example: |
+                  [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
+      /{doctorId}:
+        delete:
+          description: |
+            Deletes an ref to a doctor, i.e. the doctor is no longer assigned to the study
+          body:
+          responses:
+            200:
+
 /applications:
 /sensors:
 
@@ -73,6 +130,16 @@ traits:
     type:
       collectionItem:
         exampleItem: !include doctor/doctor-retrieve.sample
+
+    /assignedInStudies:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                schema: ids
+                example: |
+                  [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
 
 /patients:
   type:

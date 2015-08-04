@@ -3,9 +3,7 @@ package com.az.ip.api;
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Patient;
 import com.az.ip.api.gen.resource.PatientsResource;
-import com.az.ip.api.gen.resource.StudiesResource;
 import com.az.ip.api.persistence.jpa.JpaPatient;
-import com.az.ip.api.persistence.jpa.JpaStudy;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,8 +100,9 @@ public class PatientsResourceImpl implements PatientsResource {
     @Override
     public PostPatientsResponse postPatients(String accessToken, Patient entity) throws Exception {
         try {
-            repository.save(toNewJpaEntity(entity));
-            return PostPatientsResponse.withOK();
+            JpaPatient newPatient = repository.save(toNewDbEntity(entity));
+            return PostPatientsResponse.withJsonOK(toApiEntity(newPatient));
+
         } catch (RuntimeException ex) {
             // TODO: Add checks for common erros such as duplicate detectien and improve error message!
             LOG.error("postPatient request failed, exception: [{}], cause: []{}", ex, ex.getCause());
@@ -172,7 +171,7 @@ public class PatientsResourceImpl implements PatientsResource {
             .withHeight   (p.getHeight());
     }
 
-    private JpaPatient toNewJpaEntity(Patient p) {
+    private JpaPatient toNewDbEntity(Patient p) {
         return new JpaPatient(
             p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
         );

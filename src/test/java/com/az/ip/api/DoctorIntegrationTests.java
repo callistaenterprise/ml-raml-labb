@@ -1,9 +1,9 @@
 package com.az.ip.api;
 
-import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Doctor;
-import com.az.ip.api.persistence.jpa.JpaDoctor;
+import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.persistence.jpa.DoctorRepository;
+import com.az.ip.api.persistence.jpa.JpaDoctor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -80,12 +80,19 @@ public class DoctorIntegrationTests {
     @Test
     public void testPostDoctor() {
 
-        Doctor newEntity = createTestApiEntity(getUsername((MAX_NO + 1)));
-        ResponseEntity entity = restTemplate.postForEntity(baseUrl, newEntity, Doctor.class);
+        String username = getUsername(MAX_NO + 1);
+
+        Doctor newEntity = createTestApiEntity(username);
+        ResponseEntity<Doctor> entity = restTemplate.postForEntity(baseUrl, newEntity, Doctor.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertNull(entity.getBody());
+        assertNotNull(entity.getBody());
+
+        // Verify the returned new entity
+        assertNotNull(entity.getBody().getId());
+        assertEquals(0,   (int)entity.getBody().getVersion());
+        assertEquals(username, entity.getBody().getUsername());
 
         // Verify state in db
         assertEquals(NO_OF_ENTITIES + 1, repository.count());

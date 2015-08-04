@@ -1,10 +1,11 @@
 package com.az.ip.api;
 
-import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Doctor;
+import com.az.ip.api.gen.model.Error;
+import com.az.ip.api.gen.model.Id;
 import com.az.ip.api.gen.resource.DoctorsResource;
-import com.az.ip.api.persistence.jpa.JpaDoctor;
 import com.az.ip.api.persistence.jpa.DoctorRepository;
+import com.az.ip.api.persistence.jpa.JpaDoctor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +17,7 @@ import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -99,8 +101,9 @@ public class DoctorsResourceImpl implements DoctorsResource {
     @Override
     public PostDoctorsResponse postDoctors(String accessToken, Doctor entity) throws Exception {
         try {
-            repository.save(toNewJpaEntity(entity));
-            return PostDoctorsResponse.withOK();
+            JpaDoctor newDoctor = repository.save(toNewDbEntity(entity));
+            return PostDoctorsResponse.withJsonOK(toApiEntity(newDoctor));
+
         } catch (RuntimeException ex) {
             // TODO: Add checks for common erros such as duplicate detectien and improve error message!
             LOG.error("postDoctor request failed, exception: [{}], cause: []{}", ex, ex.getCause());
@@ -142,6 +145,13 @@ public class DoctorsResourceImpl implements DoctorsResource {
         return DeleteDoctorsByIdResponse.withOK();
     }
 
+    @Override
+    public GetDoctorsByIdAssignedInStudiesResponse getDoctorsByIdAssignedInStudies(String id) throws Exception {
+        JpaDoctor entity = repository.findOne(id);
+        List<Id> studyIds = entity.getAssigendInStudies().stream().map(s -> new Id().withId(s.getId())).collect(Collectors.toList());
+        return GetDoctorsByIdAssignedInStudiesResponse.withJsonOK(studyIds);
+    }
+
     private List<Doctor> findAll(String orderBy, Order order, long page, long size) {
 
         Sort.Direction sortOrder = (order == Order.asc) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -166,7 +176,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
             .withLastname (p.getLastname());
     }
 
-    private JpaDoctor toNewJpaEntity(Doctor p) {
+    private JpaDoctor toNewDbEntity(Doctor p) {
         return new JpaDoctor(
             p.getUsername(), p.getFirstname(), p.getLastname()
         );

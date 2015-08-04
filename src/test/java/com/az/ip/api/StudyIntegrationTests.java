@@ -81,12 +81,19 @@ public class StudyIntegrationTests {
     @Test
     public void testPostStudy() {
 
-        Study newEntity = createTestApiEntity(getName((MAX_NO + 1)));
-        ResponseEntity entity = restTemplate.postForEntity(baseUrl, newEntity, Study.class);
+        String name = getName((MAX_NO + 1));
+
+        Study newEntity = createTestApiEntity(name);
+        ResponseEntity<Study> entity = restTemplate.postForEntity(baseUrl, newEntity, Study.class);
 
         // Verify Rest response
         assertEquals(HttpStatus.OK, entity.getStatusCode());
-        assertNull(entity.getBody());
+        assertNotNull(entity.getBody());
+
+        // Verify the returned new entity
+        assertNotNull(entity.getBody().getId());
+        assertEquals(0, (int)entity.getBody().getVersion());
+        assertEquals(name,   entity.getBody().getName());
 
         // Verify state in db
         assertEquals(NO_OF_ENTITIES + 1, repository.count());

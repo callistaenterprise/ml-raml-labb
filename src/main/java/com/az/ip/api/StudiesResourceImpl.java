@@ -1,8 +1,11 @@
 package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Error;
+import com.az.ip.api.gen.model.Id;
 import com.az.ip.api.gen.model.Study;
 import com.az.ip.api.gen.resource.StudiesResource;
+import com.az.ip.api.persistence.jpa.DoctorRepository;
+import com.az.ip.api.persistence.jpa.JpaDoctor;
 import com.az.ip.api.persistence.jpa.JpaStudy;
 import com.az.ip.api.persistence.jpa.StudyRepository;
 import org.slf4j.Logger;
@@ -16,6 +19,7 @@ import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -32,6 +36,9 @@ public class StudiesResourceImpl implements StudiesResource {
 
     @Inject
     StudyRepository repository;
+
+    @Inject
+    DoctorRepository doctorRepository;
 
     @Override
     @GET
@@ -72,8 +79,8 @@ public class StudiesResourceImpl implements StudiesResource {
     @Override
     public PostStudiesResponse postStudies(String accessToken, Study entity) throws Exception {
         try {
-            repository.save(toNewDbEntity(entity));
-            return PostStudiesResponse.withOK();
+            JpaStudy newStudy = repository.save(toNewDbEntity(entity));
+            return PostStudiesResponse.withJsonOK(toApiEntity(newStudy));
         } catch (RuntimeException ex) {
             // TODO: Add checks for common erros such as duplicate detectien and improve error message!
             LOG.error("postPatient request failed, exception: [{}], cause: []{}", ex, ex.getCause());
@@ -113,6 +120,40 @@ public class StudiesResourceImpl implements StudiesResource {
         repository.delete(id);
 
         return DeleteStudiesByIdResponse.withOK();
+    }
+
+    @Override
+    public PostStudiesByIdAssignedDoctorsResponse postStudiesByIdAssignedDoctors(String id, Id entity) throws Exception {
+        String studyId = id;
+        String doctorId = entity.getId();
+
+        JpaStudy study = repository.findOne(studyId);
+        JpaDoctor doctor = doctorRepository.findOne(doctorId);
+        study.getAssigendDoctors().add(doctor);
+
+        repository.save(study);
+
+        return PostStudiesByIdAssignedDoctorsResponse.withOK();
+    }
+
+    @Override
+    public GetStudiesByIdAssignedDoctorsResponse getStudiesByIdAssignedDoctors(String id) throws Exception {
+        JpaStudy entity = repository.findOne(id);
+        List<Id> doctorIds = entity.getAssigendDoctors().stream().map(d -> new Id().withId(d.getId())).collect(Collectors.toList());
+        return GetStudiesByIdAssignedDoctorsResponse.withJsonOK(doctorIds);
+    }
+
+    @Override
+    public DeleteStudiesByIdAssignedDoctorsByDoctorIdResponse deleteStudiesByIdAssignedDoctorsByDoctorId(String doctorId, String id) throws Exception {
+        String studyId = id;
+
+        JpaStudy study = repository.findOne(studyId);
+        JpaDoctor doctor = doctorRepository.findOne(doctorId);
+        study.getAssigendDoctors().remove(doctor);
+
+        repository.save(study);
+
+        return DeleteStudiesByIdAssignedDoctorsByDoctorIdResponse.withOK();
     }
 
     // TODO: Extract Common code!
