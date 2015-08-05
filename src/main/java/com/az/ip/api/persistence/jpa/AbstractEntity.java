@@ -17,6 +17,11 @@ public abstract class AbstractEntity {
     // Replaced with UUID:     @GeneratedValue
     // Replaced with a String: private Long id;
     @Id
+
+    // Thw Hibernate way, see "§5.1.2.2. Identifier generator" at https://docs.jboss.org/hibernate/core/4.3/manual/en-US/html/ch05.html#mapping-declaration-id
+    //    @GeneratedValue(generator = "uuid")
+    //    @GenericGenerator(name = "uuid", strategy = "uuid")
+
     private String id;
 
     // Adopt version based optimistic concurrency control
