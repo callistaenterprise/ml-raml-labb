@@ -3,7 +3,7 @@ package com.az.ip.api;
 import com.az.ip.api.gen.model.Doctor;
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.persistence.jpa.DoctorRepository;
-import com.az.ip.api.persistence.jpa.JpaDoctor;
+import com.az.ip.api.persistence.jpa.DoctorEntity;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -409,8 +409,8 @@ public class DoctorIntegrationTests {
         return "U" + i;
     }
 
-    private JpaDoctor createTestDbEntity(String username) {
-        return new JpaDoctor(username, "F1", "L1");
+    private DoctorEntity createTestDbEntity(String username) {
+        return new DoctorEntity(username, "F1", "L1");
     }
 
     private Doctor createTestApiEntity(String username) {

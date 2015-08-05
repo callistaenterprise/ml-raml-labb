@@ -4,8 +4,8 @@ import com.az.ip.api.gen.model.Doctor;
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Id;
 import com.az.ip.api.gen.resource.DoctorsResource;
+import com.az.ip.api.persistence.jpa.DoctorEntity;
 import com.az.ip.api.persistence.jpa.DoctorRepository;
-import com.az.ip.api.persistence.jpa.JpaDoctor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -64,7 +64,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
         // Find by name?
         if (username != null) {
             LOG.debug("findByName, name: {}", username);
-            JpaDoctor entity = repository.findByUsername(username);
+            DoctorEntity entity = repository.findByUsername(username);
             return GetDoctorsResponse.withJsonOK((entity == null) ? new ArrayList<>() : singletonList(toApiEntity(entity)));
         }
 
@@ -101,7 +101,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
     @Override
     public PostDoctorsResponse postDoctors(String accessToken, Doctor entity) throws Exception {
         try {
-            JpaDoctor newDoctor = repository.save(toNewDbEntity(entity));
+            DoctorEntity newDoctor = repository.save(toNewDbEntity(entity));
             return PostDoctorsResponse.withJsonOK(toApiEntity(newDoctor));
 
         } catch (RuntimeException ex) {
@@ -114,7 +114,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
     @Override
     public GetDoctorsByIdResponse getDoctorsById(String id) throws Exception {
         LOG.debug("Get by id: {}", id);
-        JpaDoctor entity = repository.findOne(id);
+        DoctorEntity entity = repository.findOne(id);
 
         if (entity == null) {
             LOG.debug("Entity with id: {} was not found", id);
@@ -147,7 +147,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
 
     @Override
     public GetDoctorsByIdAssignedInStudiesResponse getDoctorsByIdAssignedInStudies(String id) throws Exception {
-        JpaDoctor entity = repository.findOne(id);
+        DoctorEntity entity = repository.findOne(id);
         List<Id> studyIds = entity.getAssigendInStudies().stream().map(s -> new Id().withId(s.getId())).collect(Collectors.toList());
         return GetDoctorsByIdAssignedInStudiesResponse.withJsonOK(studyIds);
     }
@@ -167,7 +167,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
         return elements;
     }
 
-    private Doctor toApiEntity(JpaDoctor p) {
+    private Doctor toApiEntity(DoctorEntity p) {
         return new Doctor()
             .withId       (p.getId())
             .withVersion  (p.getVersion())
@@ -176,14 +176,14 @@ public class DoctorsResourceImpl implements DoctorsResource {
             .withLastname (p.getLastname());
     }
 
-    private JpaDoctor toNewDbEntity(Doctor p) {
-        return new JpaDoctor(
+    private DoctorEntity toNewDbEntity(Doctor p) {
+        return new DoctorEntity(
             p.getUsername(), p.getFirstname(), p.getLastname()
         );
     }
 
-    private JpaDoctor toExistingDbEntity(Doctor p) {
-        return new JpaDoctor(
+    private DoctorEntity toExistingDbEntity(Doctor p) {
+        return new DoctorEntity(
             p.getId(), p.getVersion(), p.getUsername(), p.getFirstname(), p.getLastname()
         );
     }

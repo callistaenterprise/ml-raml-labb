@@ -2,7 +2,7 @@ package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Study;
-import com.az.ip.api.persistence.jpa.JpaStudy;
+import com.az.ip.api.persistence.jpa.StudyEntity;
 import com.az.ip.api.persistence.jpa.StudyRepository;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -412,8 +412,8 @@ public class StudyIntegrationTests {
         return "Study-" + i;
     }
 
-    private JpaStudy createTestDbEntity(String name) {
-        return new JpaStudy(name, getExpectedDescription(name), new Date(), new Date());
+    private StudyEntity createTestDbEntity(String name) {
+        return new StudyEntity(name, getExpectedDescription(name), new Date(), new Date());
     }
 
     private Study createTestApiEntity(String name) {

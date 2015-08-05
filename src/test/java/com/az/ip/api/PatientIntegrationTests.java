@@ -2,7 +2,7 @@ package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Patient;
-import com.az.ip.api.persistence.jpa.JpaPatient;
+import com.az.ip.api.persistence.jpa.PatientEntity;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -409,8 +409,8 @@ public class PatientIntegrationTests {
         return "U" + i;
     }
 
-    private JpaPatient createTestDbPatient(String username) {
-        return new JpaPatient(username, "1234", "F1", "L1", 100, 200);
+    private PatientEntity createTestDbPatient(String username) {
+        return new PatientEntity(username, "1234", "F1", "L1", 100, 200);
     }
 
     private Patient createTestApiEntity(String username) {

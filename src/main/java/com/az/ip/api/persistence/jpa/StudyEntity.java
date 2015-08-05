@@ -10,7 +10,7 @@ import java.util.Set;
 import static javax.persistence.TemporalType.DATE;
 
 @Entity
-public class JpaStudy extends AbstractEntity {
+public class StudyEntity extends AbstractEntity {
 
     @Column(unique=true)
     private String name;
@@ -28,14 +28,14 @@ public class JpaStudy extends AbstractEntity {
         joinColumns={@JoinColumn(name="STUDY_ID")},
         inverseJoinColumns={@JoinColumn(name="DOCTOR_ID")}
     )
-    private Set<JpaDoctor> doctors = new HashSet<>();
+    private Set<DoctorEntity> doctors = new HashSet<>();
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
      *
      * @param name
      */
-    public JpaStudy(String name, String description, Date startdate, Date enddate) {
+    public StudyEntity(String name, String description, Date startdate, Date enddate) {
         Assert.hasText(name);
 
         this.name = name;
@@ -51,7 +51,7 @@ public class JpaStudy extends AbstractEntity {
      * @param version
      * @param name
      */
-    public JpaStudy(String id, int version, String name, String description, Date startdate, Date enddate) {
+    public StudyEntity(String id, int version, String name, String description, Date startdate, Date enddate) {
         this(name, description, startdate, enddate);
         setIdAndVersionForExistingEntity(id, version);
     }
@@ -59,7 +59,7 @@ public class JpaStudy extends AbstractEntity {
     /**
      * The default constructor is required by the JPA implementation, but can be set protected to protect is from public visibility
      */
-    protected JpaStudy() {}
+    protected StudyEntity() {}
 
     public String getName() {
         return name;
@@ -93,7 +93,7 @@ public class JpaStudy extends AbstractEntity {
         this.enddate = enddate;
     }
 
-    public Set<JpaDoctor> getAssigendDoctors() {
+    public Set<DoctorEntity> getAssigendDoctors() {
         return doctors;
     }
 }

@@ -3,9 +3,9 @@ package com.az.ip.api;
 import com.az.ip.api.gen.model.Doctor;
 import com.az.ip.api.gen.model.Id;
 import com.az.ip.api.gen.model.Study;
+import com.az.ip.api.persistence.jpa.DoctorEntity;
 import com.az.ip.api.persistence.jpa.DoctorRepository;
-import com.az.ip.api.persistence.jpa.JpaDoctor;
-import com.az.ip.api.persistence.jpa.JpaStudy;
+import com.az.ip.api.persistence.jpa.StudyEntity;
 import com.az.ip.api.persistence.jpa.StudyRepository;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -86,15 +86,15 @@ public class StudyDoctorIntegrationTests {
         String studyName = "S-1";
         String doctorUsername = "D-1";
 
-        JpaStudy study = createTestDbStudyEntity(studyName);
-        JpaDoctor doctor = createTestDbDoctorEntity(doctorUsername);
+        StudyEntity study = createTestDbStudyEntity(studyName);
+        DoctorEntity doctor = createTestDbDoctorEntity(doctorUsername);
 
         doctorRepository.save(doctor);
 
         study.getAssigendDoctors().add(doctor);
         studyRepository.save(study);
 
-        JpaDoctor doctor2 = doctorRepository.findByUsername(doctorUsername);
+        DoctorEntity doctor2 = doctorRepository.findByUsername(doctorUsername);
 
         assertEquals(1, doctor2.getAssigendInStudies().size());
     }
@@ -106,8 +106,8 @@ public class StudyDoctorIntegrationTests {
         String studyName = "S-2";
         String doctorUsername = "D-2";
 
-        JpaStudy study = createTestDbStudyEntity(studyName);
-        JpaDoctor doctor = createTestDbDoctorEntity(doctorUsername);
+        StudyEntity study = createTestDbStudyEntity(studyName);
+        DoctorEntity doctor = createTestDbDoctorEntity(doctorUsername);
 
         ResponseEntity<Study> studyEntity = restTemplate.postForEntity(baseUrlStudies, study, Study.class);
         ResponseEntity<Doctor> doctorEntity = restTemplate.postForEntity(baseUrldoctors, doctor, Doctor.class);
@@ -166,12 +166,12 @@ public class StudyDoctorIntegrationTests {
         assertEquals(0, listAssignedStudiesAfterDelete.getBody().length);
     }
 
-    private JpaStudy createTestDbStudyEntity(String name) {
-        return new JpaStudy(name, "description", new Date(), new Date());
+    private StudyEntity createTestDbStudyEntity(String name) {
+        return new StudyEntity(name, "description", new Date(), new Date());
     }
 
-    private JpaDoctor createTestDbDoctorEntity(String username) {
-        return new JpaDoctor(username, "F1", "L1");
+    private DoctorEntity createTestDbDoctorEntity(String username) {
+        return new DoctorEntity(username, "F1", "L1");
     }
 
 }

@@ -4,9 +4,9 @@ import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Id;
 import com.az.ip.api.gen.model.Study;
 import com.az.ip.api.gen.resource.StudiesResource;
+import com.az.ip.api.persistence.jpa.DoctorEntity;
 import com.az.ip.api.persistence.jpa.DoctorRepository;
-import com.az.ip.api.persistence.jpa.JpaDoctor;
-import com.az.ip.api.persistence.jpa.JpaStudy;
+import com.az.ip.api.persistence.jpa.StudyEntity;
 import com.az.ip.api.persistence.jpa.StudyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class StudiesResourceImpl implements StudiesResource {
         // Find by name?
         if (name != null) {
             LOG.debug("findByName, name: {}", name);
-            JpaStudy entity = repository.findByName(name);
+            StudyEntity entity = repository.findByName(name);
             return GetStudiesResponse.withJsonOK((entity == null) ? new ArrayList<>() : singletonList(toApiEntity(entity)));
         }
 
@@ -79,7 +79,7 @@ public class StudiesResourceImpl implements StudiesResource {
     @Override
     public PostStudiesResponse postStudies(String accessToken, Study entity) throws Exception {
         try {
-            JpaStudy newStudy = repository.save(toNewDbEntity(entity));
+            StudyEntity newStudy = repository.save(toNewDbEntity(entity));
             return PostStudiesResponse.withJsonOK(toApiEntity(newStudy));
         } catch (RuntimeException ex) {
             // TODO: Add checks for common erros such as duplicate detectien and improve error message!
@@ -91,7 +91,7 @@ public class StudiesResourceImpl implements StudiesResource {
     @Override
     public GetStudiesByIdResponse getStudiesById(String id) throws Exception {
         LOG.debug("Get by id: {}", id);
-        JpaStudy entity = repository.findOne(id);
+        StudyEntity entity = repository.findOne(id);
 
         if (entity == null) {
             LOG.debug("Entity with id: {} was not found", id);
@@ -127,8 +127,8 @@ public class StudiesResourceImpl implements StudiesResource {
         String studyId = id;
         String doctorId = entity.getId();
 
-        JpaStudy study = repository.findOne(studyId);
-        JpaDoctor doctor = doctorRepository.findOne(doctorId);
+        StudyEntity study = repository.findOne(studyId);
+        DoctorEntity doctor = doctorRepository.findOne(doctorId);
         study.getAssigendDoctors().add(doctor);
 
         repository.save(study);
@@ -138,7 +138,7 @@ public class StudiesResourceImpl implements StudiesResource {
 
     @Override
     public GetStudiesByIdAssignedDoctorsResponse getStudiesByIdAssignedDoctors(String id) throws Exception {
-        JpaStudy entity = repository.findOne(id);
+        StudyEntity entity = repository.findOne(id);
         List<Id> doctorIds = entity.getAssigendDoctors().stream().map(d -> new Id().withId(d.getId())).collect(Collectors.toList());
         return GetStudiesByIdAssignedDoctorsResponse.withJsonOK(doctorIds);
     }
@@ -147,8 +147,8 @@ public class StudiesResourceImpl implements StudiesResource {
     public DeleteStudiesByIdAssignedDoctorsByDoctorIdResponse deleteStudiesByIdAssignedDoctorsByDoctorId(String doctorId, String id) throws Exception {
         String studyId = id;
 
-        JpaStudy study = repository.findOne(studyId);
-        JpaDoctor doctor = doctorRepository.findOne(doctorId);
+        StudyEntity study = repository.findOne(studyId);
+        DoctorEntity doctor = doctorRepository.findOne(doctorId);
         study.getAssigendDoctors().remove(doctor);
 
         repository.save(study);
@@ -172,7 +172,7 @@ public class StudiesResourceImpl implements StudiesResource {
         return elements;
     }
 
-    private Study toApiEntity(JpaStudy entity) {
+    private Study toApiEntity(StudyEntity entity) {
         return new Study()
             .withId(entity.getId())
             .withVersion(entity.getVersion())
@@ -182,8 +182,8 @@ public class StudiesResourceImpl implements StudiesResource {
             .withEnddate(entity.getEnddate());
     }
 
-    private JpaStudy toNewDbEntity(Study entity) {
-        return new JpaStudy(
+    private StudyEntity toNewDbEntity(Study entity) {
+        return new StudyEntity(
             entity.getName(),
             entity.getDescription(),
             entity.getStartdate(),
@@ -191,8 +191,8 @@ public class StudiesResourceImpl implements StudiesResource {
         );
     }
 
-    private JpaStudy toExistingDbEntity(Study entity) {
-        return new JpaStudy(
+    private StudyEntity toExistingDbEntity(Study entity) {
+        return new StudyEntity(
             entity.getId(),
             entity.getVersion(),
             entity.getName(),

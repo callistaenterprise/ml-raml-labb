@@ -3,7 +3,7 @@ package com.az.ip.api;
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Patient;
 import com.az.ip.api.gen.resource.PatientsResource;
-import com.az.ip.api.persistence.jpa.JpaPatient;
+import com.az.ip.api.persistence.jpa.PatientEntity;
 import com.az.ip.api.persistence.jpa.PatientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public class PatientsResourceImpl implements PatientsResource {
         // Find by name?
         if (username != null) {
             LOG.debug("findByName, name: {}", username);
-            JpaPatient entity = repository.findByUsername(username);
+            PatientEntity entity = repository.findByUsername(username);
             return GetPatientsResponse.withJsonOK((entity == null) ? new ArrayList<>() : singletonList(toApiEntity(entity)));
         }
 
@@ -100,7 +100,7 @@ public class PatientsResourceImpl implements PatientsResource {
     @Override
     public PostPatientsResponse postPatients(String accessToken, Patient entity) throws Exception {
         try {
-            JpaPatient newPatient = repository.save(toNewDbEntity(entity));
+            PatientEntity newPatient = repository.save(toNewDbEntity(entity));
             return PostPatientsResponse.withJsonOK(toApiEntity(newPatient));
 
         } catch (RuntimeException ex) {
@@ -113,7 +113,7 @@ public class PatientsResourceImpl implements PatientsResource {
     @Override
     public GetPatientsByIdResponse getPatientsById(String id) throws Exception {
         LOG.debug("Get by id: {}", id);
-        JpaPatient entity = repository.findOne(id);
+        PatientEntity entity = repository.findOne(id);
 
         if (entity == null) {
             LOG.debug("Entity with id: {} was not found", id);
@@ -159,7 +159,7 @@ public class PatientsResourceImpl implements PatientsResource {
         return elements;
     }
 
-    private Patient toApiEntity(JpaPatient p) {
+    private Patient toApiEntity(PatientEntity p) {
         return new Patient()
             .withId       (p.getId())
             .withVersion  (p.getVersion())
@@ -171,14 +171,14 @@ public class PatientsResourceImpl implements PatientsResource {
             .withHeight   (p.getHeight());
     }
 
-    private JpaPatient toNewDbEntity(Patient p) {
-        return new JpaPatient(
+    private PatientEntity toNewDbEntity(Patient p) {
+        return new PatientEntity(
             p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
         );
     }
 
-    private JpaPatient toExistingDbEntity(Patient p) {
-        return new JpaPatient(
+    private PatientEntity toExistingDbEntity(Patient p) {
+        return new PatientEntity(
             p.getId(), p.getVersion(), p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
         );
     }
