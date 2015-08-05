@@ -4,6 +4,9 @@ import org.springframework.util.Assert;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import java.util.Set;
 
 @Entity
 public class PatientEntity extends AbstractEntity {
@@ -17,6 +20,8 @@ public class PatientEntity extends AbstractEntity {
     private Integer weight;
     private Integer height;
 
+    @OneToMany(mappedBy="patient", fetch = FetchType.EAGER)
+    private Set<PatientDoctorStudyEntity> studiesAndDoctors;
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
@@ -107,5 +112,8 @@ public class PatientEntity extends AbstractEntity {
         this.height = height;
     }
 
+    public Set<PatientDoctorStudyEntity> getStudiesAndDoctors() {
+        return studiesAndDoctors;
+    }
 
 }

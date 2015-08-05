@@ -2,8 +2,8 @@ package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Doctor;
 import com.az.ip.api.gen.model.Error;
-import com.az.ip.api.persistence.jpa.DoctorRepository;
 import com.az.ip.api.persistence.jpa.DoctorEntity;
+import com.az.ip.api.persistence.jpa.DoctorRepository;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

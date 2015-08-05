@@ -2,10 +2,7 @@ package com.az.ip.api.persistence.jpa;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,6 +17,9 @@ public class DoctorEntity extends AbstractEntity {
 
     @ManyToMany(mappedBy="doctors", fetch = FetchType.EAGER)
     private Set<StudyEntity> studies = new HashSet<>();
+
+    @OneToMany(mappedBy="doctor", fetch = FetchType.EAGER)
+    private Set<PatientDoctorStudyEntity> patientsInStudies;
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
@@ -82,6 +82,10 @@ public class DoctorEntity extends AbstractEntity {
 
     public Set<StudyEntity> getAssigendInStudies() {
         return studies;
+    }
+
+    public Set<PatientDoctorStudyEntity> getPatientsInStudies() {
+        return patientsInStudies;
     }
 
 }

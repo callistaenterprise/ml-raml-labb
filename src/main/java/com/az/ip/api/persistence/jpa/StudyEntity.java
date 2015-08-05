@@ -30,6 +30,11 @@ public class StudyEntity extends AbstractEntity {
     )
     private Set<DoctorEntity> doctors = new HashSet<>();
 
+    @OneToMany(mappedBy="study", fetch = FetchType.EAGER)
+    private Set<PatientDoctorStudyEntity> patientsAndDoctors;
+
+
+
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
      *
@@ -96,4 +101,9 @@ public class StudyEntity extends AbstractEntity {
     public Set<DoctorEntity> getAssigendDoctors() {
         return doctors;
     }
+
+    public Set<PatientDoctorStudyEntity> getPatientsAndDoctors() {
+        return patientsAndDoctors;
+    }
+
 }

@@ -61,7 +61,7 @@ public class PatientIntegrationTests {
 
         // Insert NO_OF_ENTITIES entities in the database
         for (int i = MIN_NO; i <= MAX_NO; i++) {
-            repository.save(createTestDbPatient(getUsername(i)));
+            repository.save(createTestDbEntity(getUsername(i)));
         }
         LOG.info("Created {} test patients", repository.count());
     }
@@ -409,7 +409,7 @@ public class PatientIntegrationTests {
         return "U" + i;
     }
 
-    private PatientEntity createTestDbPatient(String username) {
+    private PatientEntity createTestDbEntity(String username) {
         return new PatientEntity(username, "1234", "F1", "L1", 100, 200);
     }
 
