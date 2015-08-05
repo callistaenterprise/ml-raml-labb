@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -21,7 +22,7 @@ public class PatientEntity extends AbstractEntity {
     private Integer height;
 
     @OneToMany(mappedBy="patient", fetch = FetchType.EAGER)
-    private Set<PatientDoctorStudyEntity> studiesAndDoctors;
+    private Set<PatientDoctorStudyEntity> studiesAndDoctors = new HashSet<>();
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version

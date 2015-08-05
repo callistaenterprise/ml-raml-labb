@@ -116,64 +116,86 @@ public class PatientDoctorStudyIntegrationTests {
         assertEquals(1, study.getPatientsAndDoctors().size());
     }
 
-    @Ignore
     @Test
     public void testPatientDoctorStudyPersistensLayerMulti() {
 
-        String study1Name = "S-1";
-        String study2Name = "S-2";
-        String study3Name = "S-3";
+        String patient1Username = "P-1";
+        String patient2Username = "P-2";
+        String patient3Username = "P-3";
+        String patient4Username = "P-4";
+
         String doctor1Username = "D-1";
         String doctor2Username = "D-2";
         String doctor3Username = "D-3";
 
-        StudyEntity study1 = createTestDbStudyEntity(study1Name);
-        StudyEntity study2 = createTestDbStudyEntity(study2Name);
-        StudyEntity study3 = createTestDbStudyEntity(study3Name);
+        String study1Name = "S-1";
+        String study2Name = "S-2";
+
+        PatientEntity patient1 = createTestDbPatientEntity(patient1Username);
+        PatientEntity patient2 = createTestDbPatientEntity(patient2Username);
+        PatientEntity patient3 = createTestDbPatientEntity(patient3Username);
+        PatientEntity patient4 = createTestDbPatientEntity(patient4Username);
 
         DoctorEntity doctor1 = createTestDbDoctorEntity(doctor1Username);
         DoctorEntity doctor2 = createTestDbDoctorEntity(doctor2Username);
         DoctorEntity doctor3 = createTestDbDoctorEntity(doctor3Username);
 
+        StudyEntity study1 = createTestDbStudyEntity(study1Name);
+        StudyEntity study2 = createTestDbStudyEntity(study2Name);
+
+        patientRepository.save(patient1);
+        patientRepository.save(patient2);
+        patientRepository.save(patient3);
+        patientRepository.save(patient4);
+
         doctorRepository.save(doctor1);
         doctorRepository.save(doctor2);
         doctorRepository.save(doctor3);
 
-        // Assign no doctors to study1, one to study2 and two to study3
-        study2.getAssigendDoctors().add(doctor2);
-        study3.getAssigendDoctors().add(doctor2);
-        study3.getAssigendDoctors().add(doctor3);
-
         studyRepository.save(study1);
         studyRepository.save(study2);
-        studyRepository.save(study3);
+
+        // Assign doctors and patients to studies
+        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient1, doctor1, study1));
+        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient1, doctor2, study2));
+        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient2, doctor1, study1));
+        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient3, doctor2, study2));
+        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient4, doctor3, study2));
+
+        // Verify with respository-find methods...
+        assertEquals(1, patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(patient1, doctor1, study1).size());
+        assertEquals(0, patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(patient2, doctor3, study2).size());
+
+        assertEquals(0, patientDoctorStudyRepository.findByStudyAndDoctor(study1, doctor3).size());
+        assertEquals(2, patientDoctorStudyRepository.findByStudyAndDoctor(study1, doctor1).size());
+        assertEquals(2, patientDoctorStudyRepository.findByStudyAndDoctor(study2, doctor2).size());
+        assertEquals(1, patientDoctorStudyRepository.findByStudyAndDoctor(study2, doctor3).size());
 
         // Reread the entities from the database
-        study1 = studyRepository.findByName(study1Name);
-        study2 = studyRepository.findByName(study2Name);
-        study3 = studyRepository.findByName(study3Name);
+        patient1 = patientRepository.findByUsername(patient1Username);
+        patient2 = patientRepository.findByUsername(patient2Username);
+        patient3 = patientRepository.findByUsername(patient3Username);
+        patient4 = patientRepository.findByUsername(patient4Username);
 
         doctor1 = doctorRepository.findByUsername(doctor1Username);
         doctor2 = doctorRepository.findByUsername(doctor2Username);
         doctor3 = doctorRepository.findByUsername(doctor3Username);
 
+        study1 = studyRepository.findByName(study1Name);
+        study2 = studyRepository.findByName(study2Name);
+
         // Verify the expected result...
-        assertEquals(0, study1.getAssigendDoctors().size());
-        assertEquals(1, study2.getAssigendDoctors().size());
-        assertEquals(2, study3.getAssigendDoctors().size());
+        assertEquals(2, patient1.getStudiesAndDoctors().size());
+        assertEquals(1, patient2.getStudiesAndDoctors().size());
+        assertEquals(1, patient3.getStudiesAndDoctors().size());
+        assertEquals(1, patient4.getStudiesAndDoctors().size());
 
-        assertTrue(study2.getAssigendDoctors().contains(doctor2));
-        assertTrue(study3.getAssigendDoctors().contains(doctor2));
-        assertTrue(study3.getAssigendDoctors().contains(doctor3));
+        assertEquals(2, doctor1.getPatientsInStudies().size());
+        assertEquals(2, doctor2.getPatientsInStudies().size());
+        assertEquals(1, doctor3.getPatientsInStudies().size());
 
-        assertEquals(0, doctor1.getAssigendInStudies().size());
-        assertEquals(2, doctor2.getAssigendInStudies().size());
-        assertEquals(1, doctor3.getAssigendInStudies().size());
-
-        assertTrue(doctor2.getAssigendInStudies().contains(study2));
-        assertTrue(doctor2.getAssigendInStudies().contains(study3));
-        assertTrue(doctor3.getAssigendInStudies().contains(study3));
-
+        assertEquals(2, study1.getPatientsAndDoctors().size());
+        assertEquals(3, study2.getPatientsAndDoctors().size());
     }
 
     @Ignore

@@ -4,8 +4,7 @@ import com.az.ip.api.gen.model.Doctor;
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Id;
 import com.az.ip.api.gen.resource.DoctorsResource;
-import com.az.ip.api.persistence.jpa.DoctorEntity;
-import com.az.ip.api.persistence.jpa.DoctorRepository;
+import com.az.ip.api.persistence.jpa.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +16,7 @@ import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
@@ -34,6 +34,9 @@ public class DoctorsResourceImpl implements DoctorsResource {
 
     @Inject
     DoctorRepository repository;
+
+    @Inject
+    PatientDoctorStudyRepository patientDoctorStudyRepository;
 
     /**
      * Search doctors
@@ -111,6 +114,13 @@ public class DoctorsResourceImpl implements DoctorsResource {
         }
     }
 
+    /**
+     * Lookup a doctor by id
+     *
+     * @param doctorId
+     * @return
+     * @throws Exception
+     */
     @Override
     public GetDoctorsByDoctorIdResponse getDoctorsByDoctorId(String doctorId) throws Exception {
         LOG.debug("Get by id: {}", doctorId);
@@ -126,6 +136,22 @@ public class DoctorsResourceImpl implements DoctorsResource {
         }
     }
 
+    /**
+     * Update a doctor
+     *
+     * @param doctorId
+     *
+     * @param accessToken
+     *     The access token provided by the authentication application e.g. AABBCCDD
+     * @param entity
+     *      e.g. {
+     *       "username":"D1",
+     *       "patientID":"1234",
+     *       "firstname":"F1",
+     *       "lastname":"L1"
+     * @return
+     * @throws Exception
+     */
     @Override
     public PutDoctorsByDoctorIdResponse putDoctorsByDoctorId(String doctorId, String accessToken, Doctor entity) throws Exception {
 
@@ -139,6 +165,15 @@ public class DoctorsResourceImpl implements DoctorsResource {
         return PutDoctorsByDoctorIdResponse.withOK();
     }
 
+    /**
+     * Delete a doctor
+     *
+     * @param doctorId
+     *
+     * @param accessToken
+     * @return
+     * @throws Exception
+     */
     @Override
     public DeleteDoctorsByDoctorIdResponse deleteDoctorsByDoctorId(String doctorId, String accessToken) throws Exception {
 
@@ -148,6 +183,13 @@ public class DoctorsResourceImpl implements DoctorsResource {
         return DeleteDoctorsByDoctorIdResponse.withOK();
     }
 
+    /**
+     * Return study id's for studies that this doctor is assigned to
+     *
+     * @param doctorId
+     * @return
+     * @throws Exception
+     */
     @Override
     public GetDoctorsByDoctorIdAssignedInStudiesResponse getDoctorsByDoctorIdAssignedInStudies(String doctorId) throws Exception {
         DoctorEntity entity = repository.findOne(doctorId);
@@ -155,22 +197,76 @@ public class DoctorsResourceImpl implements DoctorsResource {
         return GetDoctorsByDoctorIdAssignedInStudiesResponse.withJsonOK(studyIds);
     }
 
+    /**
+     * A doctor assign a patient to a study
+     *
+     * @param studyId
+     *
+     * @param doctorId
+     *
+     * @param entity
+     * @return
+     * @throws Exception
+     */
     @Override
     public PostDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse postDoctorsByDoctorIdAssignedInStudiesByStudyId(String studyId, String doctorId, Id entity) throws Exception {
-        // FIXME
-        return null;
+        String patientId = entity.getId();
+
+        // FIXME. No optimal way to create the mapping entity...
+        patientDoctorStudyRepository.save(
+            new PatientDoctorStudyEntity(
+                new PatientEntity(patientId, 0, null, null, null, null, null, null),
+                new DoctorEntity(doctorId, 0, null, null, null),
+                new StudyEntity(studyId, 0, null, null, null, null)
+            )
+        );
+
+        return PostDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse.withOK();
     }
 
+    /**
+     * Return patients assigned to a study by a doctor
+     *
+     * @param studyId
+     * @param doctorId
+     *
+     * @return
+     * @throws Exception
+     */
     @Override
     public GetDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse getDoctorsByDoctorIdAssignedInStudiesByStudyId(String studyId, String doctorId) throws Exception {
-        // FIXME
-        return null;
+
+        // FIXME. No optimal way to find mapping entities...
+        Set<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByStudyAndDoctor(
+            new StudyEntity(studyId, 0, null, null, null, null),
+            new DoctorEntity(doctorId, 0, null, null, null)
+        );
+
+        List<Id> patientIds = relationList.stream().map(r -> new Id().withId(r.getPatient().getId())).collect(Collectors.toList());
+        return GetDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse.withJsonOK(patientIds);
     }
 
+    /**
+     * A doctor delete a patient from a study
+     */
     @Override
     public DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientIdResponse deleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientId(String patientId, String studyId, String doctorId) throws Exception {
-        // FIXME
-        return null;
+
+        // FIXME. No optimal way to delete a patient from a study...
+
+        Set<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(
+            new PatientEntity(patientId, 0, null, null, null, null, null, null),
+            new DoctorEntity(doctorId, 0, null, null, null),
+            new StudyEntity(studyId, 0, null, null, null, null)
+        );
+
+        if (relationList.size() > 1) throw new RuntimeException("Inconsistenct detected, expecte 0 or 1 bug found: " + relationList.size());
+
+        if (relationList.size() == 1) {
+            patientDoctorStudyRepository.delete(relationList.iterator().next());
+        }
+
+        return DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientIdResponse.withOK();
     }
 
     private List<Doctor> findAll(String orderBy, Order order, long page, long size) {

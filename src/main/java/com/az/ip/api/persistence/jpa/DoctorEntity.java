@@ -19,7 +19,7 @@ public class DoctorEntity extends AbstractEntity {
     private Set<StudyEntity> studies = new HashSet<>();
 
     @OneToMany(mappedBy="doctor", fetch = FetchType.EAGER)
-    private Set<PatientDoctorStudyEntity> patientsInStudies;
+    private Set<PatientDoctorStudyEntity> patientsInStudies = new HashSet<>();
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version

@@ -31,7 +31,7 @@ public class StudyEntity extends AbstractEntity {
     private Set<DoctorEntity> doctors = new HashSet<>();
 
     @OneToMany(mappedBy="study", fetch = FetchType.EAGER)
-    private Set<PatientDoctorStudyEntity> patientsAndDoctors;
+    private Set<PatientDoctorStudyEntity> patientsAndDoctors = new HashSet<>();
 
 
 
