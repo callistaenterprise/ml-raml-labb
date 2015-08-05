@@ -112,44 +112,65 @@ public class DoctorsResourceImpl implements DoctorsResource {
     }
 
     @Override
-    public GetDoctorsByIdResponse getDoctorsById(String id) throws Exception {
-        LOG.debug("Get by id: {}", id);
-        DoctorEntity entity = repository.findOne(id);
+    public GetDoctorsByDoctorIdResponse getDoctorsByDoctorId(String doctorId) throws Exception {
+        LOG.debug("Get by id: {}", doctorId);
+        DoctorEntity entity = repository.findOne(doctorId);
 
         if (entity == null) {
-            LOG.debug("Entity with id: {} was not found", id);
-            return GetDoctorsByIdResponse.withNotFound();
+            LOG.debug("Entity with id: {} was not found", doctorId);
+            return GetDoctorsByDoctorIdResponse.withNotFound();
 
         } else {
             LOG.debug("Found entity with id: {} and username: {}", entity.getId(), entity.getUsername());
-            return GetDoctorsByIdResponse.withJsonOK(toApiEntity(entity));
+            return GetDoctorsByDoctorIdResponse.withJsonOK(toApiEntity(entity));
         }
     }
 
     @Override
-    public PutDoctorsByIdResponse putDoctorsById(String id, String accessToken, Doctor entity) throws Exception {
+    public PutDoctorsByDoctorIdResponse putDoctorsByDoctorId(String doctorId, String accessToken, Doctor entity) throws Exception {
 
-        // TODO: What to do if not found??? Upsert or error???
+        // TODO #1: What to do if not found??? Upsert or error???
+
+        // TODO #2: Do we need to move the id over from the uri-parameter?
+        entity.setId(doctorId);
         LOG.debug("Update entity: {}, {}, {}", entity.getId(), entity.getVersion(), entity.getUsername());
         repository.save(toExistingDbEntity(entity));
 
-        return PutDoctorsByIdResponse.withOK();
+        return PutDoctorsByDoctorIdResponse.withOK();
     }
 
     @Override
-    public DeleteDoctorsByIdResponse deleteDoctorsById(String id, String accessToken) throws Exception {
+    public DeleteDoctorsByDoctorIdResponse deleteDoctorsByDoctorId(String doctorId, String accessToken) throws Exception {
 
         // If not found just return ok to behave idempotent...
-        repository.delete(id);
+        repository.delete(doctorId);
 
-        return DeleteDoctorsByIdResponse.withOK();
+        return DeleteDoctorsByDoctorIdResponse.withOK();
     }
 
     @Override
-    public GetDoctorsByIdAssignedInStudiesResponse getDoctorsByIdAssignedInStudies(String id) throws Exception {
-        DoctorEntity entity = repository.findOne(id);
+    public GetDoctorsByDoctorIdAssignedInStudiesResponse getDoctorsByDoctorIdAssignedInStudies(String doctorId) throws Exception {
+        DoctorEntity entity = repository.findOne(doctorId);
         List<Id> studyIds = entity.getAssigendInStudies().stream().map(s -> new Id().withId(s.getId())).collect(Collectors.toList());
-        return GetDoctorsByIdAssignedInStudiesResponse.withJsonOK(studyIds);
+        return GetDoctorsByDoctorIdAssignedInStudiesResponse.withJsonOK(studyIds);
+    }
+
+    @Override
+    public PostDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse postDoctorsByDoctorIdAssignedInStudiesByStudyId(String studyId, String doctorId, Id entity) throws Exception {
+        // FIXME
+        return null;
+    }
+
+    @Override
+    public GetDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse getDoctorsByDoctorIdAssignedInStudiesByStudyId(String studyId, String doctorId) throws Exception {
+        // FIXME
+        return null;
+    }
+
+    @Override
+    public DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientIdResponse deleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientId(String patientId, String studyId, String doctorId) throws Exception {
+        // FIXME
+        return null;
     }
 
     private List<Doctor> findAll(String orderBy, Order order, long page, long size) {

@@ -67,7 +67,7 @@ traits:
         example: study-1
         required: false
         type: string
-  /{id}:
+  /{studyId}:
     type:
       collectionItem:
         exampleItem: !include study/study-retrieve.sample
@@ -126,7 +126,7 @@ traits:
         example: D11
         required: false
         type: string
-  /{id}:
+  /{doctorId}:
     type:
       collectionItem:
         exampleItem: !include doctor/doctor-retrieve.sample
@@ -140,6 +140,40 @@ traits:
                 schema: ids
                 example: |
                   [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
+      /{studyId}:
+        post:
+          description: |
+            Add a ref to a patient that is assigned by this doctor to this study
+          body:
+            application/json:
+              schema: id
+              example: |
+                { "id" : "1234567890" }
+          responses:
+            # OK
+            200:
+
+            # Duplicate error
+            409:
+              body:
+                application/json:
+                  schema: error
+        get:
+          description: Get a ref to each patient that this doctor have assigned to this study
+          responses:
+            200:
+              body:
+                application/json:
+                  schema: ids
+                  example: |
+                    [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
+        /{patientId}:
+          delete:
+            description: |
+              Deletes an ref to a patient, i.e. the patient is no longer assigned to the study by this doctor
+            body:
+            responses:
+              200:
 
 /patients:
   type:
@@ -157,7 +191,7 @@ traits:
         example: U11
         required: false
         type: string
-  /{id}:
+  /{patientId}:
     type:
       collectionItem:
         exampleItem: !include patient/patient-retrieve.sample
@@ -166,7 +200,7 @@ traits:
   post:
     body:
       application/json:
-        example: | 
+        example: |
           {
             "username": "u1",
             "patientID": "1",
@@ -189,7 +223,7 @@ traits:
       200:
         body:
           application/json:
-            example: | 
+            example: |
               [
                 {
                   "username": "u1",

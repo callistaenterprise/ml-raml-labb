@@ -111,37 +111,41 @@ public class PatientsResourceImpl implements PatientsResource {
     }
 
     @Override
-    public GetPatientsByIdResponse getPatientsById(String id) throws Exception {
-        LOG.debug("Get by id: {}", id);
-        PatientEntity entity = repository.findOne(id);
+    public GetPatientsByPatientIdResponse getPatientsByPatientId(String patientId) throws Exception {
+        LOG.debug("Get by id: {}", patientId);
+        PatientEntity entity = repository.findOne(patientId);
 
         if (entity == null) {
-            LOG.debug("Entity with id: {} was not found", id);
-            return GetPatientsByIdResponse.withNotFound();
+            LOG.debug("Entity with id: {} was not found", patientId);
+            return GetPatientsByPatientIdResponse.withNotFound();
 
         } else {
             LOG.debug("Found entity with id: {} and username: {}", entity.getId(), entity.getUsername());
-            return GetPatientsByIdResponse.withJsonOK(toApiEntity(entity));
+            return GetPatientsByPatientIdResponse.withJsonOK(toApiEntity(entity));
         }
     }
 
     @Override
-    public PutPatientsByIdResponse putPatientsById(String id, String accessToken, Patient entity) throws Exception {
+    public PutPatientsByPatientIdResponse putPatientsByPatientId(String patientId, String accessToken, Patient entity) throws Exception {
 
-        // TODO: What to do if not found??? Upsert or error???
+        // TODO #1: What to do if not found??? Upsert or error???
+
+        // TODO #2: Do we need to move the id over from the uri-parameter?
+        entity.setId(patientId);
+
         LOG.debug("Update entity: {}, {}, {}", entity.getId(), entity.getVersion(), entity.getUsername());
         repository.save(toExistingDbEntity(entity));
 
-        return PutPatientsByIdResponse.withOK();
+        return PutPatientsByPatientIdResponse.withOK();
     }
 
     @Override
-    public DeletePatientsByIdResponse deletePatientsById(String id, String accessToken) throws Exception {
+    public DeletePatientsByPatientIdResponse deletePatientsByPatientId(String patientId, String accessToken) throws Exception {
 
         // If not found just return ok to behave idempotent...
-        repository.delete(id);
+        repository.delete(patientId);
 
-        return DeletePatientsByIdResponse.withOK();
+        return DeletePatientsByPatientIdResponse.withOK();
     }
 
     private List<Patient> findAll(String orderBy, Order order, long page, long size) {

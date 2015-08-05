@@ -89,42 +89,54 @@ public class StudiesResourceImpl implements StudiesResource {
     }
 
     @Override
-    public GetStudiesByIdResponse getStudiesById(String id) throws Exception {
-        LOG.debug("Get by id: {}", id);
-        StudyEntity entity = repository.findOne(id);
+    public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) throws Exception {
+        LOG.debug("Get by id: {}", studyId);
+        StudyEntity entity = repository.findOne(studyId);
 
         if (entity == null) {
-            LOG.debug("Entity with id: {} was not found", id);
-            return GetStudiesByIdResponse.withNotFound();
+            LOG.debug("Entity with id: {} was not found", studyId);
+            return GetStudiesByStudyIdResponse.withNotFound();
 
         } else {
             LOG.debug("Found entity with id: {} and name: {}", entity.getId(), entity.getName());
-            return GetStudiesByIdResponse.withJsonOK(toApiEntity(entity));
+            return GetStudiesByStudyIdResponse.withJsonOK(toApiEntity(entity));
         }
     }
 
     @Override
-    public PutStudiesByIdResponse putStudiesById(String id, String accessToken, Study entity) throws Exception {
+    public PutStudiesByStudyIdResponse putStudiesByStudyId(String studyId, String accessToken, Study entity) throws Exception {
 
-        // TODO: What to do if not found??? Upsert or error???
+        // TODO #1: What to do if not found??? Upsert or error???
+
+        // TODO #2: Do we need to move the id over from the uri-parameter?
+        entity.setId(studyId);
+
         LOG.debug("Update entity: {}, {}, {}", entity.getId(), entity.getVersion(), entity.getName());
         repository.save(toExistingDbEntity(entity));
 
-        return PutStudiesByIdResponse.withOK();
+        return PutStudiesByStudyIdResponse.withOK();
     }
 
     @Override
-    public DeleteStudiesByIdResponse deleteStudiesById(String id, String accessToken) throws Exception {
+    public DeleteStudiesByStudyIdResponse deleteStudiesByStudyId(String studyId, String accessToken) throws Exception {
 
         // If not found just return ok to behave idempotent...
-        repository.delete(id);
+        repository.delete(studyId);
 
-        return DeleteStudiesByIdResponse.withOK();
+        return DeleteStudiesByStudyIdResponse.withOK();
     }
 
+    /**
+     * Add a doctor to this study
+     *
+     * @param studyId
+     *
+     * @param entity
+     * @return
+     * @throws Exception
+     */
     @Override
-    public PostStudiesByIdAssignedDoctorsResponse postStudiesByIdAssignedDoctors(String id, Id entity) throws Exception {
-        String studyId = id;
+    public PostStudiesByStudyIdAssignedDoctorsResponse postStudiesByStudyIdAssignedDoctors(String studyId, Id entity) throws Exception {
         String doctorId = entity.getId();
 
         StudyEntity study = repository.findOne(studyId);
@@ -133,19 +145,25 @@ public class StudiesResourceImpl implements StudiesResource {
 
         repository.save(study);
 
-        return PostStudiesByIdAssignedDoctorsResponse.withOK();
+        return PostStudiesByStudyIdAssignedDoctorsResponse.withOK();
     }
 
+    /**
+     * Get doctors assigned to this study
+     *
+     * @param studyId
+     * @return
+     * @throws Exception
+     */
     @Override
-    public GetStudiesByIdAssignedDoctorsResponse getStudiesByIdAssignedDoctors(String id) throws Exception {
-        StudyEntity entity = repository.findOne(id);
+    public GetStudiesByStudyIdAssignedDoctorsResponse getStudiesByStudyIdAssignedDoctors(String studyId) throws Exception {
+        StudyEntity entity = repository.findOne(studyId);
         List<Id> doctorIds = entity.getAssigendDoctors().stream().map(d -> new Id().withId(d.getId())).collect(Collectors.toList());
-        return GetStudiesByIdAssignedDoctorsResponse.withJsonOK(doctorIds);
+        return GetStudiesByStudyIdAssignedDoctorsResponse.withJsonOK(doctorIds);
     }
 
     @Override
-    public DeleteStudiesByIdAssignedDoctorsByDoctorIdResponse deleteStudiesByIdAssignedDoctorsByDoctorId(String doctorId, String id) throws Exception {
-        String studyId = id;
+    public DeleteStudiesByStudyIdAssignedDoctorsByDoctorIdResponse deleteStudiesByStudyIdAssignedDoctorsByDoctorId(String doctorId, String studyId) throws Exception {
 
         StudyEntity study = repository.findOne(studyId);
         DoctorEntity doctor = doctorRepository.findOne(doctorId);
@@ -153,7 +171,7 @@ public class StudiesResourceImpl implements StudiesResource {
 
         repository.save(study);
 
-        return DeleteStudiesByIdAssignedDoctorsByDoctorIdResponse.withOK();
+        return DeleteStudiesByStudyIdAssignedDoctorsByDoctorIdResponse.withOK();
     }
 
     // TODO: Extract Common code!
