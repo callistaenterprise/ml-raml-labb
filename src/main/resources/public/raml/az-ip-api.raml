@@ -9,13 +9,16 @@ securitySchemes:
 securedBy: [basic]
 
 schemas:
-  - study:    !include study/study.schema
-  - studies:  !include study/studies.schema
-  - doctor:   !include doctor/doctor.schema
-  - doctors:  !include doctor/doctors.schema
-  - patient:  !include patient/patient.schema
-  - patients: !include patient/patients.schema
-  - error:    !include common/error.schema
+  - study:        !include study/study.schema
+  - studies:      !include study/studies.schema
+  - doctor:       !include doctor/doctor.schema
+  - doctors:      !include doctor/doctors.schema
+  - patient:      !include patient/patient.schema
+  - patients:     !include patient/patients.schema
+  - measurement:  !include measurement/measurement.schema
+  - measurements: !include measurement/measurements.schema
+  - patients:     !include patient/patients.schema
+  - error:        !include common/error.schema
   - id: |
       {
         "type": "object",
@@ -48,8 +51,6 @@ traits:
   - searchable: !include common/traits/searchable.raml
   - orderable:  !include common/traits/orderable.raml
   - pageable:   !include common/traits/pageable.raml
-
-/coutries:
 
 /studies:
   type:
@@ -107,9 +108,6 @@ traits:
           responses:
             200:
 
-/applications:
-/sensors:
-
 /doctors:
   type:
     collection:
@@ -141,39 +139,40 @@ traits:
                 example: |
                   [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
       /{studyId}:
-        post:
-          description: |
-            Add a ref to a patient that is assigned by this doctor to this study
-          body:
-            application/json:
-              schema: id
-              example: |
-                { "id" : "1234567890" }
-          responses:
-            # OK
-            200:
-
-            # Duplicate error
-            409:
-              body:
-                application/json:
-                  schema: error
-        get:
-          description: Get a ref to each patient that this doctor have assigned to this study
-          responses:
-            200:
-              body:
-                application/json:
-                  schema: ids
-                  example: |
-                    [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
-        /{patientId}:
-          delete:
+        /patients:
+          post:
             description: |
-              Deletes an ref to a patient, i.e. the patient is no longer assigned to the study by this doctor
+              Add a ref to a patient that is assigned by this doctor to this study
             body:
+              application/json:
+                schema: id
+                example: |
+                  { "id" : "1234567890" }
+            responses:
+              # OK
+              200:
+
+              # Duplicate error
+              409:
+                body:
+                  application/json:
+                    schema: error
+          get:
+            description: Get a ref to each patient that this doctor have assigned to this study
             responses:
               200:
+                body:
+                  application/json:
+                    schema: ids
+                    example: |
+                      [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
+          /{patientId}:
+            delete:
+              description: |
+                Deletes an ref to a patient, i.e. the patient is no longer assigned to the study by this doctor
+              body:
+              responses:
+                200:
 
 /patients:
   type:
@@ -191,54 +190,58 @@ traits:
         example: U11
         required: false
         type: string
+
   /{patientId}:
     type:
       collectionItem:
         exampleItem: !include patient/patient-retrieve.sample
 
-/carers:
-  post:
-    body:
-      application/json:
-        example: |
-          {
-            "username": "u1",
-            "patientID": "1",
-            "firstname": "f1",
-            "lastname": "l1",
-            "weight": "100",
-            "height": "200"
-          }
-    responses:
-      200:
-      500:
-        body:
-          application/json:
-            example: |
-              {
-                "errorMessage": "The patient couldn't be created."
-              }
-  get:
-    responses:
-      200:
-        body:
-          application/json:
-            example: |
-              [
-                {
-                  "username": "u1",
-                  "patientID": "1",
-                  "firstname": "f1",
-                  "lastname": "l1",
-                  "weight": "101",
-                  "height": "201"
-                },
-                {
-                  "username": "u2",
-                  "patientID": "2",
-                  "firstname": "f2",
-                  "lastname": "l2",
-                  "weight": "102",
-                  "height": "202"
-                }
-              ]
+    /studies:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                schema: ids
+                example: |
+                  [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
+      /{studyId}:
+        /measurements:
+          post:
+            description: |
+              Add a measurement to a patient
+            body:
+              application/json:
+                schema: measurement
+                example: |
+                  { "id" : "1234567890" }
+            responses:
+              # OK
+              200:
+
+              # Duplicate error
+              409:
+                body:
+                  application/json:
+                    schema: error
+          get:
+            description: Get all measurements
+            responses:
+              200:
+                body:
+                  application/json:
+                    schema: measurements
+                    example: |
+                      [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
+          /{measurementId}:
+            delete:
+              description: |
+                Deletes measurement
+              body:
+              responses:
+                200:
+
+# /countries:
+# /applications:
+# /sensors:
+# /carers:

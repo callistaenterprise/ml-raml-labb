@@ -1,6 +1,8 @@
 package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Error;
+import com.az.ip.api.gen.model.Id;
+import com.az.ip.api.gen.model.Measurement;
 import com.az.ip.api.gen.model.Patient;
 import com.az.ip.api.gen.resource.PatientsResource;
 import com.az.ip.api.persistence.jpa.PatientEntity;
@@ -146,6 +148,32 @@ public class PatientsResourceImpl implements PatientsResource {
         repository.delete(patientId);
 
         return DeletePatientsByPatientIdResponse.withOK();
+    }
+
+    @Override
+    public GetPatientsByPatientIdStudiesResponse getPatientsByPatientIdStudies(String patientId) throws Exception {
+        // FIXME
+        List<Id> studyIds = new ArrayList<>();
+        return GetPatientsByPatientIdStudiesResponse.withJsonOK(studyIds);
+    }
+
+    @Override
+    public PostPatientsByPatientIdStudiesByStudyIdMeasurementsResponse postPatientsByPatientIdStudiesByStudyIdMeasurements(String studyId, String patientId, Measurement entity) throws Exception {
+        // FIXME
+        return PostPatientsByPatientIdStudiesByStudyIdMeasurementsResponse.withOK();
+    }
+
+    @Override
+    public GetPatientsByPatientIdStudiesByStudyIdMeasurementsResponse getPatientsByPatientIdStudiesByStudyIdMeasurements(String studyId, String patientId) throws Exception {
+        // FIXME
+        List<Measurement> measurements = new ArrayList<>();
+        return GetPatientsByPatientIdStudiesByStudyIdMeasurementsResponse.withJsonOK(measurements);
+    }
+
+    @Override
+    public DeletePatientsByPatientIdStudiesByStudyIdMeasurementsByMeasurementIdResponse deletePatientsByPatientIdStudiesByStudyIdMeasurementsByMeasurementId(String measurementId, String studyId, String patientId) throws Exception {
+        // FIXME
+        return DeletePatientsByPatientIdStudiesByStudyIdMeasurementsByMeasurementIdResponse.withOK();
     }
 
     private List<Patient> findAll(String orderBy, Order order, long page, long size) {

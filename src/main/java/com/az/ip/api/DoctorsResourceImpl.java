@@ -101,7 +101,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
      * @throws Exception
      */
     @Override
-    public PostDoctorsResponse postDoctors(String accessToken, Doctor entity) throws Exception {
+    public PostDoctorsResponse postDoctors(String accessToken, Doctor entity) {
         try {
             DoctorEntity newDoctor = repository.save(toNewDbEntity(entity));
             return PostDoctorsResponse.withJsonOK(toApiEntity(newDoctor));
@@ -121,7 +121,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
      * @throws Exception
      */
     @Override
-    public GetDoctorsByDoctorIdResponse getDoctorsByDoctorId(String doctorId) throws Exception {
+    public GetDoctorsByDoctorIdResponse getDoctorsByDoctorId(String doctorId) {
         LOG.debug("Get by id: {}", doctorId);
         DoctorEntity entity = repository.findOne(doctorId);
 
@@ -152,7 +152,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
      * @throws Exception
      */
     @Override
-    public PutDoctorsByDoctorIdResponse putDoctorsByDoctorId(String doctorId, String accessToken, Doctor entity) throws Exception {
+    public PutDoctorsByDoctorIdResponse putDoctorsByDoctorId(String doctorId, String accessToken, Doctor entity) {
 
         // TODO #1: What to do if not found??? Upsert or error???
 
@@ -174,7 +174,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
      * @throws Exception
      */
     @Override
-    public DeleteDoctorsByDoctorIdResponse deleteDoctorsByDoctorId(String doctorId, String accessToken) throws Exception {
+    public DeleteDoctorsByDoctorIdResponse deleteDoctorsByDoctorId(String doctorId, String accessToken) {
 
         // If not found just return ok to behave idempotent...
         repository.delete(doctorId);
@@ -190,7 +190,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
      * @throws Exception
      */
     @Override
-    public GetDoctorsByDoctorIdAssignedInStudiesResponse getDoctorsByDoctorIdAssignedInStudies(String doctorId) throws Exception {
+    public GetDoctorsByDoctorIdAssignedInStudiesResponse getDoctorsByDoctorIdAssignedInStudies(String doctorId) {
         DoctorEntity entity = repository.findOne(doctorId);
         List<Id> studyIds = entity.getAssigendInStudies().stream().map(s -> new Id().withId(s.getId())).collect(Collectors.toList());
         return GetDoctorsByDoctorIdAssignedInStudiesResponse.withJsonOK(studyIds);
@@ -208,7 +208,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
      * @throws Exception
      */
     @Override
-    public PostDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse postDoctorsByDoctorIdAssignedInStudiesByStudyId(String studyId, String doctorId, Id entity) throws Exception {
+    public PostDoctorsByDoctorIdAssignedInStudiesByStudyIdPatientsResponse postDoctorsByDoctorIdAssignedInStudiesByStudyIdPatients(String studyId, String doctorId, Id entity) {
         String patientId = entity.getId();
 
         // FIXME. No optimal way to create the mapping entity...
@@ -220,7 +220,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
             )
         );
 
-        return PostDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse.withOK();
+        return PostDoctorsByDoctorIdAssignedInStudiesByStudyIdPatientsResponse.withOK();
     }
 
     /**
@@ -233,7 +233,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
      * @throws Exception
      */
     @Override
-    public GetDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse getDoctorsByDoctorIdAssignedInStudiesByStudyId(String studyId, String doctorId) throws Exception {
+    public GetDoctorsByDoctorIdAssignedInStudiesByStudyIdPatientsResponse getDoctorsByDoctorIdAssignedInStudiesByStudyIdPatients(String studyId, String doctorId) {
 
         // FIXME. No optimal way to find mapping entities...
         List<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByStudyAndDoctor(
@@ -242,14 +242,14 @@ public class DoctorsResourceImpl implements DoctorsResource {
         );
 
         List<Id> patientIds = relationList.stream().map(r -> new Id().withId(r.getPatient().getId())).collect(Collectors.toList());
-        return GetDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse.withJsonOK(patientIds);
+        return GetDoctorsByDoctorIdAssignedInStudiesByStudyIdPatientsResponse.withJsonOK(patientIds);
     }
 
     /**
      * A doctor delete a patient from a study
      */
     @Override
-    public DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientIdResponse deleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientId(String patientId, String studyId, String doctorId) throws Exception {
+    public DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdPatientsByPatientIdResponse deleteDoctorsByDoctorIdAssignedInStudiesByStudyIdPatientsByPatientId(String patientId, String studyId, String doctorId) {
 
         // FIXME. No optimal way to delete a patient from a study...
 
@@ -265,7 +265,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
             patientDoctorStudyRepository.delete(relationList.get(0));
         }
 
-        return DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientIdResponse.withOK();
+        return DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdPatientsByPatientIdResponse.withOK();
     }
 
     private List<Doctor> findAll(String orderBy, Order order, long page, long size) {

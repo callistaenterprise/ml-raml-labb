@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-03/schema",
+  "id": "http://jsonschema.net",
+  "required":false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "required": true
+    },
+    "version": {
+      "type": "integer",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": false
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "required": true
+    },
+    "steps": {
+      "type": "integer",
+      "required": true
+    }
+  }
+}

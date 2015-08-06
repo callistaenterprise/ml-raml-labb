@@ -271,13 +271,13 @@ public class PatientDoctorStudyIntegrationTests {
         String patientId = patientResponse.getBody().getId();
 
         // ... now assign the patient to doctor and the study ...
-        ResponseEntity response2 = restTemplate.postForEntity(assignedInStudiesUrl + "/" + studyId, new Id().withId(patientId), String.class);
+        ResponseEntity response2 = restTemplate.postForEntity(assignedInStudiesUrl + "/" + studyId + "/patients", new Id().withId(patientId), String.class);
 
         assertEquals(HttpStatus.OK, response2.getStatusCode());
         assertNull(response2.getBody());
 
         // Assert that one patient is assigned to the study by the doctor
-        ResponseEntity<Id[]> listAssignedPatients = restTemplate.getForEntity(assignedInStudiesUrl + "/" + studyId, Id[].class);
+        ResponseEntity<Id[]> listAssignedPatients = restTemplate.getForEntity(assignedInStudiesUrl + "/" + studyId + "/patients", Id[].class);
 
         assertEquals(HttpStatus.OK, listAssignedPatients.getStatusCode());
         assertEquals(1, listAssignedPatients.getBody().length);
@@ -331,7 +331,7 @@ public class PatientDoctorStudyIntegrationTests {
         String assignedInStudiesUrl = baseUrldoctors + "/" + doctor.getId() + "/assignedInStudies";
 
         // TODO: How to verify the response???
-        restTemplate.delete(assignedInStudiesUrl + "/" + study.getId() + "/" + patient.getId());
+        restTemplate.delete(assignedInStudiesUrl + "/" + study.getId() + "/patients/" + patient.getId());
 
 
         // Verify state in db
