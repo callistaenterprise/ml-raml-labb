@@ -33,10 +33,10 @@ public class PatientsResourceImpl implements PatientsResource {
     private static final String DEFAULT_ORDER_FIELD = "username";
 
     @Inject
-    PatientRepository repository;
+    private PatientRepository repository;
 
     @Inject
-    MeasurementRepository measurementRepository;
+    private MeasurementRepository measurementRepository;
 
     /**
      * Search patients

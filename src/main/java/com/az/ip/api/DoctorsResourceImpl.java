@@ -32,10 +32,10 @@ public class DoctorsResourceImpl implements DoctorsResource {
     private static final String DEFAULT_ORDER_FIELD = "username";
 
     @Inject
-    DoctorRepository repository;
+    private DoctorRepository repository;
 
     @Inject
-    PatientDoctorStudyRepository patientDoctorStudyRepository;
+    private PatientDoctorStudyRepository patientDoctorStudyRepository;
 
     /**
      * Search doctors

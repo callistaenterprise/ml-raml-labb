@@ -10,4 +10,6 @@ public interface PatientDoctorStudyRepository extends PagingAndSortingRepository
     List<PatientDoctorStudyEntity> findByPatientAndDoctorAndStudy(PatientEntity patient, DoctorEntity doctorId, StudyEntity studyId);
 
     List<PatientDoctorStudyEntity> findByStudyAndDoctor(StudyEntity studyId, DoctorEntity doctorId);
+
+    List<PatientDoctorStudyEntity> findByStudy(StudyEntity studyId);
 }

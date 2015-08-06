@@ -73,6 +73,18 @@ traits:
       collectionItem:
         exampleItem: !include study/study-retrieve.sample
 
+    /measurements:
+      get:
+        description: Get all measurements
+        responses:
+          200:
+            body:
+              application/json:
+                schema: measurements
+                example: |
+                  [{ "id" : "1234567890" }, { "id" : "1234567891" }, { "id" : "1234567892" }]
+
+
     /assignedDoctors:
       post:
         description: |

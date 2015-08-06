@@ -2,12 +2,10 @@ package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Id;
+import com.az.ip.api.gen.model.Measurement;
 import com.az.ip.api.gen.model.Study;
 import com.az.ip.api.gen.resource.StudiesResource;
-import com.az.ip.api.persistence.jpa.DoctorEntity;
-import com.az.ip.api.persistence.jpa.DoctorRepository;
-import com.az.ip.api.persistence.jpa.StudyEntity;
-import com.az.ip.api.persistence.jpa.StudyRepository;
+import com.az.ip.api.persistence.jpa.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -35,10 +33,13 @@ public class StudiesResourceImpl implements StudiesResource {
     private static final String DEFAULT_ORDER_FIELD = "name";
 
     @Inject
-    StudyRepository repository;
+    private StudyRepository repository;
 
     @Inject
-    DoctorRepository doctorRepository;
+    private DoctorRepository doctorRepository;
+
+    @Inject
+    private PatientDoctorStudyRepository patientDoctorStudyRepository;
 
     @Override
     @GET
@@ -124,6 +125,17 @@ public class StudiesResourceImpl implements StudiesResource {
         repository.delete(studyId);
 
         return DeleteStudiesByStudyIdResponse.withOK();
+    }
+
+    @Override
+    public GetStudiesByStudyIdMeasurementsResponse getStudiesByStudyIdMeasurements(String studyId) throws Exception {
+
+        StudyEntity study = repository.findOne(studyId);
+        List<Measurement> list = patientDoctorStudyRepository.findByStudy(study).stream()
+            .flatMap(m -> m.getMeasurements().stream())
+            .map(m -> toApiMeasurementEntity(m))
+            .collect(Collectors.toList());
+        return GetStudiesByStudyIdMeasurementsResponse.withJsonOK(list);
     }
 
     /**
@@ -219,4 +231,15 @@ public class StudiesResourceImpl implements StudiesResource {
             entity.getEnddate()
         );
     }
+
+    // TODO: Move to a common library with static methods that resourceImpl classesa (and other) can import?
+    private Measurement toApiMeasurementEntity(MeasurementEntity m) {
+        return new Measurement()
+            .withId         (m.getId())
+            .withVersion    (m.getVersion())
+            .withDescription(m.getDescription())
+            .withTimestamp  (m.getTimestamp())
+            .withSteps      (m.getSteps());
+    }
+
 }
