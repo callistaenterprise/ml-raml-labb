@@ -217,7 +217,7 @@ public class PatientDoctorStudyIntegrationTests {
     @Test
     public void testAddPatientToStudyAPI() {
 
-        String patientUsername = "D-2";
+        String patientUsername = "P-2";
         String doctorUsername = "D-2";
         String studyName = "S-2";
 
