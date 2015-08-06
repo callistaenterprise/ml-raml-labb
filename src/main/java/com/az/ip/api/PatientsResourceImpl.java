@@ -5,8 +5,7 @@ import com.az.ip.api.gen.model.Id;
 import com.az.ip.api.gen.model.Measurement;
 import com.az.ip.api.gen.model.Patient;
 import com.az.ip.api.gen.resource.PatientsResource;
-import com.az.ip.api.persistence.jpa.PatientEntity;
-import com.az.ip.api.persistence.jpa.PatientRepository;
+import com.az.ip.api.persistence.jpa.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +17,7 @@ import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -34,6 +34,9 @@ public class PatientsResourceImpl implements PatientsResource {
 
     @Inject
     PatientRepository repository;
+
+    @Inject
+    MeasurementRepository measurementRepository;
 
     /**
      * Search patients
@@ -150,30 +153,94 @@ public class PatientsResourceImpl implements PatientsResource {
         return DeletePatientsByPatientIdResponse.withOK();
     }
 
+    /**
+     * Return the id's of the studies that the patient is part of
+     *
+     * @param patientId
+     * @return
+     * @throws Exception
+     */
     @Override
     public GetPatientsByPatientIdStudiesResponse getPatientsByPatientIdStudies(String patientId) throws Exception {
-        // FIXME
-        List<Id> studyIds = new ArrayList<>();
+
+        PatientEntity patient = repository.findOne(patientId);
+        List<Id> studyIds = patient.getStudiesAndDoctors().stream().map(s -> new Id().withId(s.getStudy().getId())).collect(Collectors.toList());
         return GetPatientsByPatientIdStudiesResponse.withJsonOK(studyIds);
     }
 
+    /**
+     * Store a new measurement for the patient
+     *
+     * @param studyId
+     *
+     * @param patientId
+     *
+     * @param measurement
+     * @return
+     * @throws Exception
+     */
     @Override
-    public PostPatientsByPatientIdStudiesByStudyIdMeasurementsResponse postPatientsByPatientIdStudiesByStudyIdMeasurements(String studyId, String patientId, Measurement entity) throws Exception {
-        // FIXME
+    public PostPatientsByPatientIdStudiesByStudyIdMeasurementsResponse postPatientsByPatientIdStudiesByStudyIdMeasurements(String studyId, String patientId, Measurement measurement) throws Exception {
+
+        PatientEntity patient = repository.findOne(patientId);
+        measurementRepository.save(toNewDbMeasurementEntity(findByStudieId(patient, studyId), measurement));
+
         return PostPatientsByPatientIdStudiesByStudyIdMeasurementsResponse.withOK();
     }
 
+    /**
+     * Return all measurements for a patient in a specified study
+     *
+     * @param studyId
+     * @param patientId
+     *
+     * @return
+     * @throws Exception
+     */
     @Override
     public GetPatientsByPatientIdStudiesByStudyIdMeasurementsResponse getPatientsByPatientIdStudiesByStudyIdMeasurements(String studyId, String patientId) throws Exception {
-        // FIXME
-        List<Measurement> measurements = new ArrayList<>();
+
+        PatientEntity     patient      = repository.findOne(patientId);
+        List<Measurement> measurements = findByStudieId(patient, studyId).getMeasurements().stream()
+            .map(m -> toApiMeasurementEntity(m))
+            .collect(Collectors.toList());
         return GetPatientsByPatientIdStudiesByStudyIdMeasurementsResponse.withJsonOK(measurements);
     }
 
+    /**
+     * Deletes a measurement
+     *
+     * @param measurementId
+     * @param studyId
+     *
+     * @param patientId
+     *
+     * @return
+     * @throws Exception
+     */
     @Override
     public DeletePatientsByPatientIdStudiesByStudyIdMeasurementsByMeasurementIdResponse deletePatientsByPatientIdStudiesByStudyIdMeasurementsByMeasurementId(String measurementId, String studyId, String patientId) throws Exception {
-        // FIXME
+
+
+//        PatientEntity     patient     = repository.findOne(patientId);
+//        MeasurementEntity measurement = findByStudieId(patient, studyId).getMeasurements().stream()
+//            .filter(m -> m.getId().equals(measurementId))
+//            .findFirst().get();
+//
+//        measurementRepository.delete(measurement);
+
+        // Simplified version that relies on that the measurementId is unique...
+        measurementRepository.delete(measurementId);
+
         return DeletePatientsByPatientIdStudiesByStudyIdMeasurementsByMeasurementIdResponse.withOK();
+    }
+
+    private PatientDoctorStudyEntity findByStudieId(PatientEntity patient, String studyId) {
+        // FIXME. What to do if there are >1 study assigend to one and the same patient? (indicates inconsistent data...)
+        return patient.getStudiesAndDoctors().stream()
+            .filter(s -> s.getStudy().getId().equals(studyId))
+            .findFirst()
+            .get();
     }
 
     private List<Patient> findAll(String orderBy, Order order, long page, long size) {
@@ -214,4 +281,21 @@ public class PatientsResourceImpl implements PatientsResource {
             p.getId(), p.getVersion(), p.getUsername(), p.getPatientID(), p.getFirstname(), p.getLastname(), p.getWeight(), p.getHeight()
         );
     }
+
+    private Measurement toApiMeasurementEntity(MeasurementEntity m) {
+        return new Measurement()
+            .withId         (m.getId())
+            .withVersion    (m.getVersion())
+            .withDescription(m.getDescription())
+            .withTimestamp  (m.getTimestamp())
+            .withSteps      (m.getSteps());
+    }
+
+    private MeasurementEntity toNewDbMeasurementEntity(PatientDoctorStudyEntity p, Measurement m) {
+        return new MeasurementEntity(
+            p, m.getDescription(), m.getTimestamp(), m.getSteps()
+        );
+    }
+
+
 }

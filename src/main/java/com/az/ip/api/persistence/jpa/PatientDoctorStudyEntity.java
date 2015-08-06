@@ -1,23 +1,23 @@
 package com.az.ip.api.persistence.jpa;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class PatientDoctorStudyEntity extends AbstractEntity {
 
     @ManyToOne
-    @JoinColumn
     private PatientEntity patient;
 
     @ManyToOne
-    @JoinColumn
     private DoctorEntity doctor;
 
     @ManyToOne
-    @JoinColumn
     private StudyEntity study;
+
+    @OneToMany(mappedBy="patient", fetch = FetchType.EAGER)
+    private List<MeasurementEntity> measurements = new ArrayList<>();
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
@@ -74,5 +74,9 @@ public class PatientDoctorStudyEntity extends AbstractEntity {
 
     public void setStudy(StudyEntity study) {
         this.study = study;
+    }
+
+    public List<MeasurementEntity> getMeasurements() {
+        return measurements;
     }
 }

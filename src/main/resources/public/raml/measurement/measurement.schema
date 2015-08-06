@@ -16,7 +16,7 @@
       "type": "string",
       "required": false
     },
-    "date": {
+    "timestamp": {
       "type": "string",
       "format": "date-time",
       "required": true

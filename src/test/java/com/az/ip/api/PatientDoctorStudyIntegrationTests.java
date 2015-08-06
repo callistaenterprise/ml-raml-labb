@@ -1,9 +1,6 @@
 package com.az.ip.api;
 
-import com.az.ip.api.gen.model.Doctor;
-import com.az.ip.api.gen.model.Id;
-import com.az.ip.api.gen.model.Patient;
-import com.az.ip.api.gen.model.Study;
+import com.az.ip.api.gen.model.*;
 import com.az.ip.api.persistence.jpa.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -20,6 +17,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.Date;
 
 import static org.junit.Assert.*;
@@ -50,6 +48,9 @@ public class PatientDoctorStudyIntegrationTests {
     String pwd;
 
     @Inject
+    MeasurementRepository measurementRepository;
+
+    @Inject
     PatientDoctorStudyRepository patientDoctorStudyRepository;
 
     @Inject
@@ -74,6 +75,7 @@ public class PatientDoctorStudyIntegrationTests {
     @Before
     @After
     public void setupDb() {
+        measurementRepository.deleteAll();
         patientDoctorStudyRepository.deleteAll();
         patientRepository.deleteAll();
         studyRepository.deleteAll();
@@ -202,6 +204,12 @@ public class PatientDoctorStudyIntegrationTests {
     // FIXME
     @Ignore
     @Test
+    public void testPatientDoctorStudyPersistensLayerMeasurement() {
+    }
+
+    // FIXME
+    @Ignore
+    @Test
     public void testPatientDoctorStudyPersistensLayerDuplicateError() {
     }
 
@@ -285,7 +293,42 @@ public class PatientDoctorStudyIntegrationTests {
 
 
 
-        // 1. Verify state in db
+        // 4. Get the patient, lookup the study and add some measurements
+        ResponseEntity<Patient[]> patients = restTemplate.getForEntity(baseUrlPatients + "?username=" + patientUsername, Patient[].class);
+
+        assertEquals(HttpStatus.OK, patients.getStatusCode());
+        assertEquals(1, patients.getBody().length);
+
+        patient = patients.getBody()[0];
+        assertEquals(patientUsername, patient.getUsername());
+
+        // ...get the patients studies...
+        ResponseEntity<Id[]> studyIds = restTemplate.getForEntity(baseUrlPatients + "/" + patient.getId() + "/studies", Id[].class);
+        assertEquals(HttpStatus.OK, studyIds.getStatusCode());
+
+        // ...lookup the study...
+        Study theStudy = Arrays.stream(studyIds.getBody())
+            .map(sId -> getStudy(sId))
+            .filter(s -> s.getName().equals(studyName))
+            .findFirst().get();
+
+        // ...ok, we found the study, let's add some measurements...
+        ResponseEntity<Measurement> measurement1 = restTemplate.postForEntity(baseUrlPatients + "/" + patient.getId() + "/studies/" + theStudy.getId() + "/measurements", createTestApiMeasurementEntity(1000), Measurement.class);
+        assertEquals(HttpStatus.OK, measurement1.getStatusCode());
+
+        ResponseEntity<Measurement> measurement2 = restTemplate.postForEntity(baseUrlPatients + "/" + patient.getId() + "/studies/" + theStudy.getId() + "/measurements", createTestApiMeasurementEntity(2000), Measurement.class);
+        assertEquals(HttpStatus.OK, measurement2.getStatusCode());
+
+
+        // ...wrap up with verifying that we can get the two measurements again...
+        ResponseEntity<Measurement[]> measurements = restTemplate.getForEntity(baseUrlPatients + "/" + patient.getId() + "/studies/" + theStudy.getId() + "/measurements", Measurement[].class);
+        assertEquals(HttpStatus.OK, measurements.getStatusCode());
+        assertEquals(2, measurements.getBody().length);
+
+        assertEquals(1000, (int)measurements.getBody()[0].getSteps());
+        assertEquals(2000, (int) measurements.getBody()[1].getSteps());
+
+        // Verify state in db
         assertEquals(1, patientRepository.count());
         assertEquals(1, doctorRepository.count());
         assertEquals(1, studyRepository.count());
@@ -296,12 +339,20 @@ public class PatientDoctorStudyIntegrationTests {
         assertEquals(patientId,  mappingEntity.getPatient().getId());
         assertEquals(doctorId,   mappingEntity.getDoctor().getId());
         assertEquals(studyId,    mappingEntity.getStudy().getId());
+        assertEquals(2,          mappingEntity.getMeasurements().size());
+
 
 
 
         // Verify db response
         assertEquals(1, studyRepository.findByName(studyName).getAssigendDoctors().size());
         assertEquals(1, doctorRepository.findByUsername(doctorUsername).getAssigendInStudies().size());
+    }
+
+    private Study getStudy(Id sId) {
+        ResponseEntity<Study> s = restTemplate.getForEntity(baseUrlStudies + "/" + sId.getId(), Study.class);
+        assertEquals(HttpStatus.OK, s.getStatusCode());
+        return s.getBody();
     }
 
 
@@ -333,6 +384,7 @@ public class PatientDoctorStudyIntegrationTests {
         // TODO: How to verify the response???
         restTemplate.delete(assignedInStudiesUrl + "/" + study.getId() + "/patients/" + patient.getId());
 
+        // TODO: test removal of measuremments here as well?
 
         // Verify state in db
         assertEquals(0, patientDoctorStudyRepository.count());
@@ -369,4 +421,9 @@ public class PatientDoctorStudyIntegrationTests {
     private Study createTestApiStudyEntity(String name) {
         return new Study().withName(name).withDescription("descr").withStartdate(new Date()).withEnddate(new Date());
     }
+
+    private Measurement createTestApiMeasurementEntity(int steps) {
+        return new Measurement().withDescription("descr").withTimestamp(new Date()).withSteps(steps);
+    }
+
 }
