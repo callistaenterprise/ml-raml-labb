@@ -157,12 +157,16 @@ public class StudyDoctorIntegrationTests {
 
     }
 
+    // FIXME
     @Ignore
     @Test
     public void testStudyDoctorPersistensLayerDuplicateError() {
     }
 
 
+    /**
+     * Is this test needed or can it be replaced by the test testAddPatienToStudyAPI in PatientDoctorStudyIntegrationTests.java?
+     */
     @Test
     public void testAddDoctorToStudyAPI() {
 
@@ -207,7 +211,7 @@ public class StudyDoctorIntegrationTests {
         assertEquals(HttpStatus.OK, listAssignedDoctors.getStatusCode());
         assertEquals(1, listAssignedDoctors.getBody().length);
 
-        // Assert one studie assigned to the doctor
+        // Assert one study assigned to the doctor
         String assignedInStudiesUrl = baseUrldoctors + "/" + doctorEntity.getBody().getId() + "/assignedInStudies";
         ResponseEntity<Id[]> listAssignedStudies = restTemplate.getForEntity(assignedInStudiesUrl, Id[].class);
         assertEquals(HttpStatus.OK, listAssignedStudies.getStatusCode());
@@ -223,10 +227,16 @@ public class StudyDoctorIntegrationTests {
         assertEquals(HttpStatus.OK, listAssignedDoctorsAfterDelete.getStatusCode());
         assertEquals(0, listAssignedDoctorsAfterDelete.getBody().length);
 
-        // Assert that no studie is assigned to the doctor anymore
+        // Assert that no study is assigned to the doctor anymore
         ResponseEntity<Id[]> listAssignedStudiesAfterDelete = restTemplate.getForEntity(assignedInStudiesUrl, Id[].class);
         assertEquals(HttpStatus.OK, listAssignedStudiesAfterDelete.getStatusCode());
         assertEquals(0, listAssignedStudiesAfterDelete.getBody().length);
+    }
+
+    // FIXME
+    @Ignore
+    @Test
+    public void testStudyDoctorAPI_negativeTests() {
     }
 
     private StudyEntity createTestDbStudyEntity(String name) {

@@ -215,9 +215,9 @@ public class DoctorsResourceImpl implements DoctorsResource {
         // FIXME. No optimal way to create the mapping entity...
         patientDoctorStudyRepository.save(
             new PatientDoctorStudyEntity(
-                new PatientEntity(patientId, 0, null, null, null, null, null, null),
-                new DoctorEntity(doctorId, 0, null, null, null),
-                new StudyEntity(studyId, 0, null, null, null, null)
+                new PatientEntity(patientId, 0, ".", null, ".", ".", null, null),
+                new DoctorEntity(doctorId, 0, ".", ".", "."),
+                new StudyEntity(studyId, 0, ".", null, null, null)
             )
         );
 
@@ -238,8 +238,8 @@ public class DoctorsResourceImpl implements DoctorsResource {
 
         // FIXME. No optimal way to find mapping entities...
         Set<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByStudyAndDoctor(
-            new StudyEntity(studyId, 0, null, null, null, null),
-            new DoctorEntity(doctorId, 0, null, null, null)
+            new StudyEntity(studyId, 0, ".", null, null, null),
+            new DoctorEntity(doctorId, 0, ".", ".", ".")
         );
 
         List<Id> patientIds = relationList.stream().map(r -> new Id().withId(r.getPatient().getId())).collect(Collectors.toList());
@@ -255,9 +255,9 @@ public class DoctorsResourceImpl implements DoctorsResource {
         // FIXME. No optimal way to delete a patient from a study...
 
         Set<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(
-            new PatientEntity(patientId, 0, null, null, null, null, null, null),
-            new DoctorEntity(doctorId, 0, null, null, null),
-            new StudyEntity(studyId, 0, null, null, null, null)
+            new PatientEntity(patientId, 0, ".", null, ".", ".", null, null),
+            new DoctorEntity(doctorId, 0, ".", ".", "."),
+            new StudyEntity(studyId, 0, ".", null, null, null)
         );
 
         if (relationList.size() > 1) throw new RuntimeException("Inconsistenct detected, expecte 0 or 1 bug found: " + relationList.size());

@@ -2,6 +2,7 @@ package com.az.ip.api;
 
 import com.az.ip.api.gen.model.Doctor;
 import com.az.ip.api.gen.model.Id;
+import com.az.ip.api.gen.model.Patient;
 import com.az.ip.api.gen.model.Study;
 import com.az.ip.api.persistence.jpa.*;
 import org.junit.*;
@@ -198,77 +199,151 @@ public class PatientDoctorStudyIntegrationTests {
         assertEquals(3, study2.getPatientsAndDoctors().size());
     }
 
+    // FIXME
     @Ignore
     @Test
     public void testPatientDoctorStudyPersistensLayerDuplicateError() {
     }
 
 
-    @Ignore
     @Test
-    public void testAddDoctorToStudyAPI() {
+    public void testAddPatienToStudyAPI() {
 
-        String studyName = "S-2";
+        String patientUsername = "D-2";
         String doctorUsername = "D-2";
+        String studyName = "S-2";
 
-        StudyEntity study = createTestDbStudyEntity(studyName);
-        DoctorEntity doctor = createTestDbDoctorEntity(doctorUsername);
-
-        ResponseEntity<Study> studyEntity = restTemplate.postForEntity(baseUrlStudies, study, Study.class);
-        ResponseEntity<Doctor> doctorEntity = restTemplate.postForEntity(baseUrldoctors, doctor, Doctor.class);
-
-        // Verify Rest response
-        assertEquals(HttpStatus.OK, studyEntity.getStatusCode());
-        assertNotNull(studyEntity.getBody());
-
-        assertEquals(HttpStatus.OK, doctorEntity.getStatusCode());
-        assertNotNull(doctorEntity.getBody());
-
-        // Verify state in db
-        assertEquals(1, studyRepository.count());
-        assertEquals(1, doctorRepository.count());
-        assertEquals(0, studyRepository.findByName(studyName).getAssigendDoctors().size());
-        assertEquals(0, doctorRepository.findByUsername(doctorUsername).getAssigendInStudies().size());
+        Patient patient = createTestApiPatientEntity(patientUsername);
+        Study   study   = createTestApiStudyEntity(studyName);
+        Doctor  doctor  = createTestApiDoctorEntity(doctorUsername);
 
 
-        // Assign doctor to the study
-        Id id = new Id().withId(doctorEntity.getBody().getId());
-        String assignedDoctorsUrl = baseUrlStudies + "/" + studyEntity.getBody().getId() + "/assignedDoctors";
-        ResponseEntity<String> result = restTemplate.postForEntity(assignedDoctorsUrl, id, String.class);
 
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertNull(result.getBody());
+        // 1. Setup a study
+        ResponseEntity<Study> studyResponse = restTemplate.postForEntity(baseUrlStudies, study,   Study.class);
 
-        // Verify db result
-        assertEquals(1, studyRepository.findByName(studyName).getAssigendDoctors().size());
-        assertEquals(1, doctorRepository.findByUsername(doctorUsername).getAssigendInStudies().size());
+        assertEquals(HttpStatus.OK, studyResponse.getStatusCode());
+        assertNotNull(studyResponse.getBody());
 
-        // Assert one doctor assigned to the studie
+        String studyId = studyResponse.getBody().getId();
+
+
+
+        // 2. Create a doctor and assign the doctor to the study
+        ResponseEntity<Doctor>  doctorResponse  = restTemplate.postForEntity(baseUrldoctors, doctor,  Doctor.class);
+
+        assertEquals(HttpStatus.OK, doctorResponse.getStatusCode());
+        assertNotNull(doctorResponse.getBody());
+
+        String doctorId = doctorResponse.getBody().getId();
+
+        // ... now assign the doctor to the study ...
+        String assignedDoctorsUrl = baseUrlStudies + "/" + studyId + "/assignedDoctors";
+        ResponseEntity response1 = restTemplate.postForEntity(assignedDoctorsUrl, new Id().withId(doctorId), String.class);
+
+        assertEquals(HttpStatus.OK, response1.getStatusCode());
+        assertNull(response1.getBody());
+
+
+        // Assert that one doctor is assigned to the study
         ResponseEntity<Id[]> listAssignedDoctors = restTemplate.getForEntity(assignedDoctorsUrl, Id[].class);
 
         assertEquals(HttpStatus.OK, listAssignedDoctors.getStatusCode());
         assertEquals(1, listAssignedDoctors.getBody().length);
+        assertEquals(doctorId, listAssignedDoctors.getBody()[0].getId());
 
-        // Assert one studie assigned to the doctor
-        String assignedInStudiesUrl = baseUrldoctors + "/" + doctorEntity.getBody().getId() + "/assignedInStudies";
+        // Assert that one study is assigned to the doctor
+        String assignedInStudiesUrl = baseUrldoctors + "/" + doctorId + "/assignedInStudies";
         ResponseEntity<Id[]> listAssignedStudies = restTemplate.getForEntity(assignedInStudiesUrl, Id[].class);
+
         assertEquals(HttpStatus.OK, listAssignedStudies.getStatusCode());
         assertEquals(1, listAssignedStudies.getBody().length);
+        assertEquals(studyId, listAssignedStudies.getBody()[0].getId());
 
-        // Remove the doctors assignment in the study
-        // TODO: How do we get error http codes from a HTTP DELETE using the restTemplate???
-        restTemplate.delete(assignedDoctorsUrl + "/" + doctorEntity.getBody().getId());
 
-        // Assert that no doctor is assigned to the study anymore
-        ResponseEntity<Id[]> listAssignedDoctorsAfterDelete = restTemplate.getForEntity(assignedDoctorsUrl, Id[].class);
 
-        assertEquals(HttpStatus.OK, listAssignedDoctorsAfterDelete.getStatusCode());
-        assertEquals(0, listAssignedDoctorsAfterDelete.getBody().length);
+        // 3. Create a patient and assign the patient to the doctor and the study
+        ResponseEntity<Patient> patientResponse = restTemplate.postForEntity(baseUrlPatients, patient, Patient.class);
 
-        // Assert that no studie is assigned to the doctor anymore
-        ResponseEntity<Id[]> listAssignedStudiesAfterDelete = restTemplate.getForEntity(assignedInStudiesUrl, Id[].class);
-        assertEquals(HttpStatus.OK, listAssignedStudiesAfterDelete.getStatusCode());
-        assertEquals(0, listAssignedStudiesAfterDelete.getBody().length);
+        assertEquals(HttpStatus.OK, patientResponse.getStatusCode());
+        assertNotNull(patientResponse.getBody());
+
+        String patientId = patientResponse.getBody().getId();
+
+        // ... now assign the patient to doctor and the study ...
+        ResponseEntity response2 = restTemplate.postForEntity(assignedInStudiesUrl + "/" + studyId, new Id().withId(patientId), String.class);
+
+        assertEquals(HttpStatus.OK, response2.getStatusCode());
+        assertNull(response2.getBody());
+
+        // Assert that one patient is assigned to the study by the doctor
+        ResponseEntity<Id[]> listAssignedPatients = restTemplate.getForEntity(assignedInStudiesUrl + "/" + studyId, Id[].class);
+
+        assertEquals(HttpStatus.OK, listAssignedPatients.getStatusCode());
+        assertEquals(1, listAssignedPatients.getBody().length);
+        assertEquals(patientId, listAssignedPatients.getBody()[0].getId());
+
+
+
+        // 1. Verify state in db
+        assertEquals(1, patientRepository.count());
+        assertEquals(1, doctorRepository.count());
+        assertEquals(1, studyRepository.count());
+        assertEquals(1, studyRepository.findByName(studyName).getAssigendDoctors().size());
+        assertEquals(1, doctorRepository.findByUsername(doctorUsername).getAssigendInStudies().size());
+        assertEquals(1, patientDoctorStudyRepository.count());
+        PatientDoctorStudyEntity mappingEntity = patientDoctorStudyRepository.findAll().iterator().next();
+        assertEquals(patientId,  mappingEntity.getPatient().getId());
+        assertEquals(doctorId,   mappingEntity.getDoctor().getId());
+        assertEquals(studyId,    mappingEntity.getStudy().getId());
+
+
+
+        // Verify db response
+        assertEquals(1, studyRepository.findByName(studyName).getAssigendDoctors().size());
+        assertEquals(1, doctorRepository.findByUsername(doctorUsername).getAssigendInStudies().size());
+    }
+
+
+    @Test
+    public void testDeletePatientFromStudyAPI() {
+
+        // Prepare the database for one patient assigned to one study by one doctor
+        PatientEntity patient = createTestDbPatientEntity("P-1");
+        DoctorEntity  doctor = createTestDbDoctorEntity("D-1");
+        StudyEntity   study = createTestDbStudyEntity("S-1");
+
+        patientRepository.save(patient);
+        doctorRepository.save(doctor);
+        studyRepository.save(study);
+
+        PatientDoctorStudyEntity relationEntity = new PatientDoctorStudyEntity(patient, doctor, study);
+        patientDoctorStudyRepository.save(relationEntity);
+
+        // verify the setup
+        assertEquals(1, patientDoctorStudyRepository.count());
+        PatientDoctorStudyEntity mappingEntity = patientDoctorStudyRepository.findAll().iterator().next();
+        assertEquals(patient.getId(), mappingEntity.getPatient().getId());
+        assertEquals(doctor.getId(), mappingEntity.getDoctor().getId());
+        assertEquals(study.getId(), mappingEntity.getStudy().getId());
+
+        // Now, use the API to remove the patient from the studie
+        String assignedInStudiesUrl = baseUrldoctors + "/" + doctor.getId() + "/assignedInStudies";
+
+        // TODO: How to verify the response???
+        restTemplate.delete(assignedInStudiesUrl + "/" + study.getId() + "/" + patient.getId());
+
+
+        // Verify state in db
+        assertEquals(0, patientDoctorStudyRepository.count());
+
+    }
+
+
+    // FIXME
+    @Ignore
+    @Test
+    public void testPatientDoctorStudyAPI_negativeTests() {
     }
 
     private PatientEntity createTestDbPatientEntity(String username) {
@@ -283,4 +358,15 @@ public class PatientDoctorStudyIntegrationTests {
         return new DoctorEntity(username, "F1", "L1");
     }
 
+    private Patient createTestApiPatientEntity(String username) {
+        return new Patient().withUsername(username).withPatientID("1234").withFirstname("F1").withLastname("L1").withWeight(100).withHeight(200);
+    }
+
+    private Doctor createTestApiDoctorEntity(String username) {
+        return new Doctor().withUsername(username).withFirstname("F1").withLastname("L1");
+    }
+
+    private Study createTestApiStudyEntity(String name) {
+        return new Study().withName(name).withDescription("descr").withStartdate(new Date()).withEnddate(new Date());
+    }
 }

@@ -54,6 +54,7 @@ public class SecurityIntegrationTests {
         restTemplate = new TestRestTemplate(user, pwd);
     }
 
+    // FIXME
     @Ignore
     @Test
     public void testLoginErrorNoHttps() {
