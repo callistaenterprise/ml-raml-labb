@@ -3,8 +3,8 @@ package com.az.ip.api.persistence.jpa;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class DoctorEntity extends AbstractEntity {
@@ -16,10 +16,10 @@ public class DoctorEntity extends AbstractEntity {
     private String lastname;
 
     @ManyToMany(mappedBy="doctors", fetch = FetchType.EAGER)
-    private Set<StudyEntity> studies = new HashSet<>();
+    private List<StudyEntity> studies = new ArrayList<>();
 
     @OneToMany(mappedBy="doctor", fetch = FetchType.EAGER)
-    private Set<PatientDoctorStudyEntity> patientsInStudies = new HashSet<>();
+    private List<PatientDoctorStudyEntity> patientsInStudies = new ArrayList<>();
 
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
@@ -80,11 +80,11 @@ public class DoctorEntity extends AbstractEntity {
         this.lastname = lastname;
     }
 
-    public Set<StudyEntity> getAssigendInStudies() {
+    public List<StudyEntity> getAssigendInStudies() {
         return studies;
     }
 
-    public Set<PatientDoctorStudyEntity> getPatientsInStudies() {
+    public List<PatientDoctorStudyEntity> getPatientsInStudies() {
         return patientsInStudies;
     }
 

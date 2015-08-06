@@ -3,9 +3,9 @@ package com.az.ip.api.persistence.jpa;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import static javax.persistence.TemporalType.DATE;
 
@@ -28,10 +28,10 @@ public class StudyEntity extends AbstractEntity {
         joinColumns={@JoinColumn(name="STUDY_ID")},
         inverseJoinColumns={@JoinColumn(name="DOCTOR_ID")}
     )
-    private Set<DoctorEntity> doctors = new HashSet<>();
+    private List<DoctorEntity> doctors = new ArrayList<>();
 
     @OneToMany(mappedBy="study", fetch = FetchType.EAGER)
-    private Set<PatientDoctorStudyEntity> patientsAndDoctors = new HashSet<>();
+    private List<PatientDoctorStudyEntity> patientsAndDoctors = new ArrayList<>();
 
 
 
@@ -98,11 +98,11 @@ public class StudyEntity extends AbstractEntity {
         this.enddate = enddate;
     }
 
-    public Set<DoctorEntity> getAssigendDoctors() {
+    public List<DoctorEntity> getAssigendDoctors() {
         return doctors;
     }
 
-    public Set<PatientDoctorStudyEntity> getPatientsAndDoctors() {
+    public List<PatientDoctorStudyEntity> getPatientsAndDoctors() {
         return patientsAndDoctors;
     }
 

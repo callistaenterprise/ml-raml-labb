@@ -16,7 +16,6 @@ import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
@@ -237,7 +236,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
     public GetDoctorsByDoctorIdAssignedInStudiesByStudyIdResponse getDoctorsByDoctorIdAssignedInStudiesByStudyId(String studyId, String doctorId) throws Exception {
 
         // FIXME. No optimal way to find mapping entities...
-        Set<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByStudyAndDoctor(
+        List<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByStudyAndDoctor(
             new StudyEntity(studyId, 0, ".", null, null, null),
             new DoctorEntity(doctorId, 0, ".", ".", ".")
         );
@@ -254,7 +253,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
 
         // FIXME. No optimal way to delete a patient from a study...
 
-        Set<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(
+        List<PatientDoctorStudyEntity> relationList = patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(
             new PatientEntity(patientId, 0, ".", null, ".", ".", null, null),
             new DoctorEntity(doctorId, 0, ".", ".", "."),
             new StudyEntity(studyId, 0, ".", null, null, null)
@@ -263,7 +262,7 @@ public class DoctorsResourceImpl implements DoctorsResource {
         if (relationList.size() > 1) throw new RuntimeException("Inconsistenct detected, expecte 0 or 1 bug found: " + relationList.size());
 
         if (relationList.size() == 1) {
-            patientDoctorStudyRepository.delete(relationList.iterator().next());
+            patientDoctorStudyRepository.delete(relationList.get(0));
         }
 
         return DeleteDoctorsByDoctorIdAssignedInStudiesByStudyIdByPatientIdResponse.withOK();
