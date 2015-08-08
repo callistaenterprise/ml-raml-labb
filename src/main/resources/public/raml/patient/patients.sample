@@ -1,26 +1,22 @@
 [
   {
-    "username":"U1",
-    "patientID":"1234",
-    "firstname":"F1",
-    "lastname":"L1",
-    "weight":100,
-    "height":200
+    "id": "86f2ca19-b39a-459e-9045-c562ed0d610a",
+    "version": 0,
+    "username": "P-1",
+    "patientID": "1234",
+    "firstname": "P1-F",
+    "lastname": "P1-L",
+    "weight": 100,
+    "height": 200
   },
   {
-    "username":"U2",
-    "patientID":"1234",
-    "firstname":"F1",
-    "lastname":"L1",
-    "weight":100,
-    "height":200
-  },
-  {
-    "username":"U3",
-    "patientID":"1234",
-    "firstname":"F1",
-    "lastname":"L1",
-    "weight":100,
-    "height":200
+    "id": "5fab5c7f-313a-437b-b621-5b20c2c1d5d8",
+    "version": 0,
+    "username": "P-2",
+    "patientID": "5678",
+    "firstname": "P2-F",
+    "lastname": "P2-L",
+    "weight": 100,
+    "height": 200
   }
 ]

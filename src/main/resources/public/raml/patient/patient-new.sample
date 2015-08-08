@@ -1,8 +1,8 @@
 {
-  "username":"U1",
-  "patientID":"1234",
-  "firstname":"F1",
-  "lastname":"L1",
-  "weight":100,
-  "height":200
+  "username": "P-1",
+  "patientID": "1234",
+  "firstname": "P1-F",
+  "lastname": "P1-L",
+  "weight": 100,
+  "height": 200
 }

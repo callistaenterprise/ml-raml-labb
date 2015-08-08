@@ -4,6 +4,7 @@
           Get the <<resourcePathName|!singularize>>
           with <<resourcePathName|!singularize>>Id =
           {<<resourcePathName|!singularize>>Id}
+
         responses:
           200:
             body:
@@ -11,11 +12,11 @@
                 schema: <<resourcePathName|!singularize>>
                 example: |
                   <<exampleItem>>
+
           404:
-#            body:
-#              application/json:
-#                example: |
-#                  {"message": "<<resourcePathName|!singularize>> not found" }
+            description: |
+              The entity was not found
+
       put:
         description: |
           Updates an existing <<resourcePathName|!singularize>>.
@@ -30,6 +31,7 @@
             schema: <<resourcePathName|!singularize>>
             example: |
               <<exampleItem>>
+
         responses:
           200:
 #            body:
@@ -37,11 +39,17 @@
 #                example: |
 #                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
 
-          # Invalid parameters in request
           422:
+            description: |
+              Invalid parameters in request, see error message in body for more information
             body:
               application/json:
                 schema: error
+                example: |
+                  {
+                    "code": 999,
+                    "message": "...error message explaning the reason for returning an error..."
+                  }
       delete:
         description: |
           Deletes an existing <<resourcePathName|!singularize>>.
@@ -52,15 +60,17 @@
             required: true
             type: string
         body:
+
         responses:
           200:
-#            body:
-#              application/json:
-#                example: |
-#                  { "message": "The <<resourcePathName|!singularize>> has been properly entered" }
-
-          # Invalid parameters in request
           422:
+            description: |
+              Invalid parameters in request, see error message in body for more information
             body:
               application/json:
                 schema: error
+                example: |
+                  {
+                    "code": 999,
+                    "message": "...error message explaning the reason for returning an error..."
+                  }

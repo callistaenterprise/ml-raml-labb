@@ -8,11 +8,17 @@
                 schema: <<resourcePathName|!pluralize>>
                 example: |
                   <<exampleCollection>>
-          # Invalid parameters in request
           422:
+            description: |
+              Invalid parameters in request, see error message in body for more information
             body:
               application/json:
                 schema: error
+                example: |
+                  {
+                    "code": 999,
+                    "message": "...error message explaning the reason for returning an error..."
+                  }
       post:
         description: |
           Add a new <<resourcePathName|!singularize>>.
@@ -26,7 +32,7 @@
           application/json:
             schema: <<resourcePathName|!singularize>>
             example: |
-              <<exampleItem>>
+              <<exampleNewItem>>
         responses:
           200:
             body:
@@ -34,8 +40,14 @@
                 schema: <<resourcePathName|!singularize>>
                 example: |
                   <<exampleItem>>
-          # Duplicate error
           409:
+            description: |
+              Duplicate error, see error message in body for more information
             body:
               application/json:
                 schema: error
+                example: |
+                  {
+                    "code": 999,
+                    "message": "...error message explaning the reason for returning an error..."
+                  }

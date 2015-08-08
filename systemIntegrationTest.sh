@@ -4,10 +4,9 @@
 # docker pull magnuslarsson/az-ip-api-server
 # docker run -it --rm -p 8080:8080 magnuslarsson/az-ip-api-server
 
+# host=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com
+# port=59406
 # host=localhost
-
-#host=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com
-#port=59406
 host=docker
 port=8080
 hdr="--user demo:omed.1 -s -w \\n"
@@ -156,11 +155,11 @@ echo patient1Study: $patient1Study
 # 4.4 Register measurements on patient #1
 
 patient1measurement1=`curl $hdr -H "Content-Type: application/json" http://$host:$port/api/patients/$patient1Id/studies/$patient1Study/measurements \
-  -X POST -d '{"description":"descr","timestamp":1438869686987,"steps":1000}'`
+  -X POST -d '{"description":"descr","timestamp":"2015-08-08T14:23:46Z","steps":1000}'`
 echo patient1measurement1: $patient1measurement1
 
 patient1measurement2=`curl $hdr -H "Content-Type: application/json" http://$host:$port/api/patients/$patient1Id/studies/$patient1Study/measurements \
-  -X POST -d '{"description":"descr","timestamp":1438869687022,"steps":2000}'`
+  -X POST -d '{"description":"descr","timestamp":"2015-08-09T23:20:50Z","steps":2000}'`
 echo patient1measurement2: $patient1measurement2
 
 
@@ -204,11 +203,11 @@ echo patient2Study: $patient2Study
 # 5.4 Register measurements on patient #2
 
 patient2measurement1=`curl $hdr -H "Content-Type: application/json" http://$host:$port/api/patients/$patient2Id/studies/$patient2Study/measurements \
-  -X POST -d '{"description":"descr","timestamp":1438869686987,"steps":3000}'`
+  -X POST -d '{"description":"descr","timestamp":"2015-08-04T09:12:05Z","steps":3000}'`
 echo patient2measurement1: $patient2measurement1
 
 patient2measurement2=`curl $hdr -H "Content-Type: application/json" http://$host:$port/api/patients/$patient2Id/studies/$patient2Study/measurements \
-  -X POST -d '{"description":"descr","timestamp":1438869687022,"steps":4000}'`
+  -X POST -d '{"description":"descr","timestamp":"2015-08-06T20:18:37Z","steps":4000}'`
 echo patient2measurement2: $patient2measurement2
 
 
