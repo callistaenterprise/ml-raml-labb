@@ -51,7 +51,7 @@ public class PatientDoctorStudyIntegrationTests {
     MeasurementRepository measurementRepository;
 
     @Inject
-    PatientDoctorStudyRepository patientDoctorStudyRepository;
+    PatientDoctorStudyRepository pdsRepository;
 
     @Inject
     PatientRepository patientRepository;
@@ -76,7 +76,7 @@ public class PatientDoctorStudyIntegrationTests {
     @After
     public void setupDb() {
         measurementRepository.deleteAll();
-        patientDoctorStudyRepository.deleteAll();
+        pdsRepository.deleteAll();
         patientRepository.deleteAll();
         studyRepository.deleteAll();
         doctorRepository.deleteAll();
@@ -106,7 +106,7 @@ public class PatientDoctorStudyIntegrationTests {
         studyRepository.save(study);
 
         PatientDoctorStudyEntity relationEntity = new PatientDoctorStudyEntity(patient, doctor, study);
-        patientDoctorStudyRepository.save(relationEntity);
+        pdsRepository.save(relationEntity);
 
         // Reread the entities from the database
         patient = patientRepository.findByUsername(patientUsername);
@@ -114,9 +114,10 @@ public class PatientDoctorStudyIntegrationTests {
         study = studyRepository.findByName(studyName);
 
         // Verify the expected result...
-        assertEquals(1, patient.getStudiesAndDoctors().size());
-        assertEquals(1, doctor.getPatientsInStudies().size());
-        assertEquals(1, study.getPatientsAndDoctors().size());
+
+        assertEquals(1, pdsRepository.findByPatient(patient).size());
+        assertEquals(1, pdsRepository.findByDoctor(doctor).size());
+        assertEquals(1, pdsRepository.findByStudy(study).size());
     }
 
     @Test
@@ -159,20 +160,20 @@ public class PatientDoctorStudyIntegrationTests {
         studyRepository.save(study2);
 
         // Assign doctors and patients to studies
-        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient1, doctor1, study1));
-        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient1, doctor2, study2));
-        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient2, doctor1, study1));
-        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient3, doctor2, study2));
-        patientDoctorStudyRepository.save(new PatientDoctorStudyEntity(patient4, doctor3, study2));
+        pdsRepository.save(new PatientDoctorStudyEntity(patient1, doctor1, study1));
+        pdsRepository.save(new PatientDoctorStudyEntity(patient1, doctor2, study2));
+        pdsRepository.save(new PatientDoctorStudyEntity(patient2, doctor1, study1));
+        pdsRepository.save(new PatientDoctorStudyEntity(patient3, doctor2, study2));
+        pdsRepository.save(new PatientDoctorStudyEntity(patient4, doctor3, study2));
 
-        // Verify with respository-find methods...
-        assertEquals(1, patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(patient1, doctor1, study1).size());
-        assertEquals(0, patientDoctorStudyRepository.findByPatientAndDoctorAndStudy(patient2, doctor3, study2).size());
+        // Verify with repository-find methods...
+        assertEquals(1, pdsRepository.findByPatientAndDoctorAndStudy(patient1, doctor1, study1).size());
+        assertEquals(0, pdsRepository.findByPatientAndDoctorAndStudy(patient2, doctor3, study2).size());
 
-        assertEquals(0, patientDoctorStudyRepository.findByStudyAndDoctor(study1, doctor3).size());
-        assertEquals(2, patientDoctorStudyRepository.findByStudyAndDoctor(study1, doctor1).size());
-        assertEquals(2, patientDoctorStudyRepository.findByStudyAndDoctor(study2, doctor2).size());
-        assertEquals(1, patientDoctorStudyRepository.findByStudyAndDoctor(study2, doctor3).size());
+        assertEquals(0, pdsRepository.findByStudyAndDoctor(study1, doctor3).size());
+        assertEquals(2, pdsRepository.findByStudyAndDoctor(study1, doctor1).size());
+        assertEquals(2, pdsRepository.findByStudyAndDoctor(study2, doctor2).size());
+        assertEquals(1, pdsRepository.findByStudyAndDoctor(study2, doctor3).size());
 
         // Reread the entities from the database
         patient1 = patientRepository.findByUsername(patient1Username);
@@ -188,23 +189,84 @@ public class PatientDoctorStudyIntegrationTests {
         study2 = studyRepository.findByName(study2Name);
 
         // Verify the expected result...
-        assertEquals(2, patient1.getStudiesAndDoctors().size());
-        assertEquals(1, patient2.getStudiesAndDoctors().size());
-        assertEquals(1, patient3.getStudiesAndDoctors().size());
-        assertEquals(1, patient4.getStudiesAndDoctors().size());
+        assertEquals(2, pdsRepository.findByPatient(patient1).size());
+        assertEquals(1, pdsRepository.findByPatient(patient2).size());
+        assertEquals(1, pdsRepository.findByPatient(patient3).size());
+        assertEquals(1, pdsRepository.findByPatient(patient4).size());
 
-        assertEquals(2, doctor1.getPatientsInStudies().size());
-        assertEquals(2, doctor2.getPatientsInStudies().size());
-        assertEquals(1, doctor3.getPatientsInStudies().size());
+        assertEquals(2, pdsRepository.findByDoctor(doctor1).size());
+        assertEquals(2, pdsRepository.findByDoctor(doctor2).size());
+        assertEquals(1, pdsRepository.findByDoctor(doctor3).size());
 
-        assertEquals(2, study1.getPatientsAndDoctors().size());
-        assertEquals(3, study2.getPatientsAndDoctors().size());
+        assertEquals(2, pdsRepository.findByStudy(study1).size());
+        assertEquals(3, pdsRepository.findByStudy(study2).size());
+    }
+
+    @Test
+    public void testPatientDoctorStudyPersistensLayerMulti2() {
+
+        String patient1Username = "P-1";
+        String patient2Username = "P-2";
+
+        String doctor1Username = "D-1";
+        String doctor2Username = "D-2";
+
+        String study1Name = "S-1";
+
+        PatientEntity patient1 = createTestDbPatientEntity(patient1Username);
+        PatientEntity patient2 = createTestDbPatientEntity(patient2Username);
+
+        DoctorEntity doctor1 = createTestDbDoctorEntity(doctor1Username);
+        DoctorEntity doctor2 = createTestDbDoctorEntity(doctor2Username);
+
+        StudyEntity study1 = createTestDbStudyEntity(study1Name);
+
+        patientRepository.save(patient1);
+        patientRepository.save(patient2);
+
+        doctorRepository.save(doctor1);
+        doctorRepository.save(doctor2);
+
+        studyRepository.save(study1);
+
+        // Assign doctors to the study
+        study1.getAssigendDoctors().add(doctor1);
+        study1.getAssigendDoctors().add(doctor2);
+
+        studyRepository.save(study1);
+
+        // Assign patients to studies via doctor1
+        pdsRepository.save(new PatientDoctorStudyEntity(patient1, doctor1, study1));
+        pdsRepository.save(new PatientDoctorStudyEntity(patient2, doctor1, study1));
+        
+        assertEquals(2, pdsRepository.count());
+        assertEquals(1, pdsRepository.findByPatient(patient1).size());
+        assertEquals(1, pdsRepository.findByPatientId(patient1.getId()).size());
     }
 
     // FIXME
     @Ignore
     @Test
     public void testPatientDoctorStudyPersistensLayerMeasurement() {
+        String patientUsername = "P-1";
+        String studyName = "S-1";
+        String doctorUsername = "D-1";
+
+        PatientEntity patient = createTestDbPatientEntity(patientUsername);
+        DoctorEntity  doctor = createTestDbDoctorEntity(doctorUsername);
+        StudyEntity   study = createTestDbStudyEntity(studyName);
+
+        patientRepository.save(patient);
+        doctorRepository.save(doctor);
+        studyRepository.save(study);
+
+        PatientDoctorStudyEntity relationEntity = new PatientDoctorStudyEntity(patient, doctor, study);
+        relationEntity.getMeasurements().add(createTestDbMeasurementEntity(relationEntity, 200));
+        relationEntity.getMeasurements().add(createTestDbMeasurementEntity(relationEntity, 300));
+
+        pdsRepository.save(relationEntity);
+
+        fail("Not done here...");
     }
 
     // FIXME
@@ -344,8 +406,8 @@ public class PatientDoctorStudyIntegrationTests {
         assertEquals(1, studyRepository.count());
         assertEquals(1, studyRepository.findByName(studyName).getAssigendDoctors().size());
         assertEquals(1, doctorRepository.findByUsername(doctorUsername).getAssigendInStudies().size());
-        assertEquals(1, patientDoctorStudyRepository.count());
-        PatientDoctorStudyEntity mappingEntity = patientDoctorStudyRepository.findAll().iterator().next();
+        assertEquals(1, pdsRepository.count());
+        PatientDoctorStudyEntity mappingEntity = pdsRepository.findAll().iterator().next();
         assertEquals(patientId,  mappingEntity.getPatient().getId());
         assertEquals(doctorId,   mappingEntity.getDoctor().getId());
         assertEquals(studyId,    mappingEntity.getStudy().getId());
@@ -377,11 +439,11 @@ public class PatientDoctorStudyIntegrationTests {
         studyRepository.save(study);
 
         PatientDoctorStudyEntity relationEntity = new PatientDoctorStudyEntity(patient, doctor, study);
-        patientDoctorStudyRepository.save(relationEntity);
+        pdsRepository.save(relationEntity);
 
         // verify the setup
-        assertEquals(1, patientDoctorStudyRepository.count());
-        PatientDoctorStudyEntity mappingEntity = patientDoctorStudyRepository.findAll().iterator().next();
+        assertEquals(1, pdsRepository.count());
+        PatientDoctorStudyEntity mappingEntity = pdsRepository.findAll().iterator().next();
         assertEquals(patient.getId(), mappingEntity.getPatient().getId());
         assertEquals(doctor.getId(), mappingEntity.getDoctor().getId());
         assertEquals(study.getId(), mappingEntity.getStudy().getId());
@@ -395,7 +457,7 @@ public class PatientDoctorStudyIntegrationTests {
         // TODO: test removal of measuremments here as well?
 
         // Verify state in db
-        assertEquals(0, patientDoctorStudyRepository.count());
+        assertEquals(0, pdsRepository.count());
 
     }
 
@@ -428,6 +490,10 @@ public class PatientDoctorStudyIntegrationTests {
 
     private Study createTestApiStudyEntity(String name) {
         return new Study().withName(name).withDescription("descr").withStartdate(new Date()).withEnddate(new Date());
+    }
+
+    private MeasurementEntity createTestDbMeasurementEntity(PatientDoctorStudyEntity pds, int steps) {
+        return new MeasurementEntity(pds, "descr", new Date(), steps);
     }
 
     private Measurement createTestApiMeasurementEntity(int steps) {

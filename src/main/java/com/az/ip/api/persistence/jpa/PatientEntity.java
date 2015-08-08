@@ -21,9 +21,6 @@ public class PatientEntity extends AbstractEntity {
     private Integer weight;
     private Integer height;
 
-    @OneToMany(mappedBy="patient", fetch = FetchType.EAGER)
-    private List<PatientDoctorStudyEntity> studiesAndDoctors = new ArrayList<>();
-
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
      *
@@ -112,9 +109,4 @@ public class PatientEntity extends AbstractEntity {
     public void setHeight(Integer height) {
         this.height = height;
     }
-
-    public List<PatientDoctorStudyEntity> getStudiesAndDoctors() {
-        return studiesAndDoctors;
-    }
-
 }

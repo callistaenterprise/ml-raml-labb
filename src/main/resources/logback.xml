@@ -15,11 +15,11 @@
 
 	<logger name="com.az.ip.api" level="DEBUG" />
 
-	<!-- logs the SQL statements -->
-	<logger name="org.hibernate.SQL" level="DEBUG" />
+	<!--&lt;!&ndash; logs the SQL statements &ndash;&gt;-->
+	<!--<logger name="org.hibernate.SQL" level="DEBUG" />-->
 
-	<!-- Logs the JDBC parameters passed to a query -->
-	<logger name="org.hibernate.type" level="TRACE" />
+	<!--&lt;!&ndash; Logs the JDBC parameters passed to a query &ndash;&gt;-->
+	<!--<logger name="org.hibernate.type" level="TRACE" />-->
 
 	<!-- Uncomment for logging ALL HTTP request and responses -->
 	<!-- 	<logger name="com.excilys.ebi.gatling.http" level="TRACE" /> -->

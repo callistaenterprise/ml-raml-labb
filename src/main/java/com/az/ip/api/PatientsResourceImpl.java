@@ -36,7 +36,13 @@ public class PatientsResourceImpl implements PatientsResource {
     private PatientRepository repository;
 
     @Inject
+    private StudyRepository studyRepository;
+
+    @Inject
     private MeasurementRepository measurementRepository;
+
+    @Inject
+    private PatientDoctorStudyRepository patientDoctorStudyRepository;
 
     /**
      * Search patients
@@ -163,8 +169,9 @@ public class PatientsResourceImpl implements PatientsResource {
     @Override
     public GetPatientsByPatientIdStudiesResponse getPatientsByPatientIdStudies(String patientId) throws Exception {
 
-        PatientEntity patient = repository.findOne(patientId);
-        List<Id> studyIds = patient.getStudiesAndDoctors().stream().map(s -> new Id().withId(s.getStudy().getId())).collect(Collectors.toList());
+        List<Id> studyIds = patientDoctorStudyRepository.findByPatientId(patientId).stream()
+            .map(s -> new Id().withId(s.getStudy().getId()))
+            .collect(Collectors.toList());
         return GetPatientsByPatientIdStudiesResponse.withJsonOK(studyIds);
     }
 
@@ -182,9 +189,9 @@ public class PatientsResourceImpl implements PatientsResource {
     @Override
     public PostPatientsByPatientIdStudiesByStudyIdMeasurementsResponse postPatientsByPatientIdStudiesByStudyIdMeasurements(String studyId, String patientId, Measurement measurement) throws Exception {
 
-        PatientEntity patient = repository.findOne(patientId);
-        measurementRepository.save(toNewDbMeasurementEntity(findByStudieId(patient, studyId), measurement));
+        measurementRepository.save(toNewDbMeasurementEntity(findByPatientIdAndStudyId(patientId, studyId), measurement));
 
+        // TODO: Shouldn't we return the new measurement entity here???
         return PostPatientsByPatientIdStudiesByStudyIdMeasurementsResponse.withOK();
     }
 
@@ -200,8 +207,7 @@ public class PatientsResourceImpl implements PatientsResource {
     @Override
     public GetPatientsByPatientIdStudiesByStudyIdMeasurementsResponse getPatientsByPatientIdStudiesByStudyIdMeasurements(String studyId, String patientId) throws Exception {
 
-        PatientEntity     patient      = repository.findOne(patientId);
-        List<Measurement> measurements = findByStudieId(patient, studyId).getMeasurements().stream()
+        List<Measurement> measurements = findByPatientIdAndStudyId(patientId, studyId).getMeasurements().stream()
             .map(m -> toApiMeasurementEntity(m))
             .collect(Collectors.toList());
         return GetPatientsByPatientIdStudiesByStudyIdMeasurementsResponse.withJsonOK(measurements);
@@ -235,13 +241,12 @@ public class PatientsResourceImpl implements PatientsResource {
         return DeletePatientsByPatientIdStudiesByStudyIdMeasurementsByMeasurementIdResponse.withOK();
     }
 
-    private PatientDoctorStudyEntity findByStudieId(PatientEntity patient, String studyId) {
-        // FIXME. What to do if there are >1 study assigend to one and the same patient? (indicates inconsistent data...)
-        return patient.getStudiesAndDoctors().stream()
-            .filter(s -> s.getStudy().getId().equals(studyId))
-            .findFirst()
-            .get();
+    private PatientDoctorStudyEntity findByPatientIdAndStudyId(String patientId, String studyId) {
+        // FIXME. What to do if there are >1 study assigned to one and the same patient? (indicates inconsistent data...)
+        List<PatientDoctorStudyEntity> list = patientDoctorStudyRepository.findByPatientIdAndStudyId(patientId, studyId);
+        return (list.size() == 0) ? null : list.get(0);
     }
+
 
     private List<Patient> findAll(String orderBy, Order order, long page, long size) {
 

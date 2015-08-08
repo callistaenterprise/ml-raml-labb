@@ -18,9 +18,6 @@ public class DoctorEntity extends AbstractEntity {
     @ManyToMany(mappedBy="doctors", fetch = FetchType.EAGER)
     private List<StudyEntity> studies = new ArrayList<>();
 
-    @OneToMany(mappedBy="doctor", fetch = FetchType.EAGER)
-    private List<PatientDoctorStudyEntity> patientsInStudies = new ArrayList<>();
-
     /**
      * Constructor for new (not yet persited) entities, without specifying id and version
      *
@@ -83,9 +80,4 @@ public class DoctorEntity extends AbstractEntity {
     public List<StudyEntity> getAssigendInStudies() {
         return studies;
     }
-
-    public List<PatientDoctorStudyEntity> getPatientsInStudies() {
-        return patientsInStudies;
-    }
-
 }
