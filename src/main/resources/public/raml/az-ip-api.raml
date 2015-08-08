@@ -1,5 +1,5 @@
 #%RAML 0.8
-title: AZ IP API
+title: AZ IP API, v1
 version: v0.2
 #baseUri: /api
 baseUri: https://localhost:8080/api
@@ -64,8 +64,8 @@ traits:
         ]
     queryParameters:
       name:
-        description: "Search by name"
-        example: study-1
+        description: "Search by name, e.g.: study-1"
+        example:
         required: false
         type: string
   /{studyId}:
