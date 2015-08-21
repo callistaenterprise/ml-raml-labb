@@ -6,8 +6,8 @@
 
 # host=mt-fo-lb-168423950.us-east-1.elb.amazonaws.com
 # port=59406
-# host=localhost
-host=docker
+host=localhost
+# host=docker
 port=8080
 hdr="--user demo:omed.1 -s -w \\n"
 

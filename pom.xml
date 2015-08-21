@@ -76,9 +76,28 @@
             <scope>test</scope>
         </dependency>
 	</dependencies>
-	
+
 	<build>
     <plugins>
+
+      <plugin>
+        <groupId>com.sebastian-daschner</groupId>
+        <artifactId>jaxrs-analyzer-maven-plugin</artifactId>
+        <version>0.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>analyze-jaxrs</goal>
+            </goals>
+            <configuration>
+              <!--<backend>plaintext</backend>-->
+              <backend>swagger</backend>
+              <deployedDomain>localhost</deployedDomain>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
         <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
@@ -202,7 +221,7 @@
 
       </plugins>
 	</build>
-	
+
 	<repositories>
 		<repository>
 			<id>spring-snapshots</id>
