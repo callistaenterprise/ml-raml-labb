@@ -1,4 +1,4 @@
-package com.az.ip.api;
+package com.az.ip.api.raml;
 
 import com.az.ip.api.gen.model.Error;
 import com.az.ip.api.gen.model.Id;

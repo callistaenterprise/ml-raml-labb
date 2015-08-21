@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
 public class StudyDoctorIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StudyIntegrationTests.class);
-    private static final String BASE_URI = "/api";
+    private static final String BASE_URI = "/raml-api";
     private static final String BASE_URI_STUDIES = "/studies";
     private static final String BASE_URI_DOCTORS = "/doctors";
     private static final String PROTOCOL = "http";

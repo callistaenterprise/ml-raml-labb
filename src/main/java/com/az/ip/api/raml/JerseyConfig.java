@@ -1,4 +1,4 @@
-package com.az.ip.api;
+package com.az.ip.api.raml;
 
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.ApplicationPath;
 
 @Component
-@ApplicationPath("/api")
+@ApplicationPath("/raml-api")
 public class JerseyConfig extends ResourceConfig {
 
     public JerseyConfig() {

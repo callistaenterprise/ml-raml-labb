@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
 public class PatientIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatientIntegrationTests.class);
-    private static final String BASE_URI = "/api/patients";
+    private static final String BASE_URI = "/raml-api/patients";
     private static final String PROTOCOL = "http";
 
     @Value("${local.server.port}")

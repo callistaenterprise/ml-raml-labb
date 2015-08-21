@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 public class PatientDoctorStudyIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StudyIntegrationTests.class);
-    private static final String BASE_URI = "/api";
+    private static final String BASE_URI = "/raml-api";
     private static final String BASE_URI_PATIENTS = "/patients";
     private static final String BASE_URI_DOCTORS = "/doctors";
     private static final String BASE_URI_STUDIES = "/studies";
@@ -238,7 +238,7 @@ public class PatientDoctorStudyIntegrationTests {
         // Assign patients to studies via doctor1
         pdsRepository.save(new PatientDoctorStudyEntity(patient1, doctor1, study1));
         pdsRepository.save(new PatientDoctorStudyEntity(patient2, doctor1, study1));
-        
+
         assertEquals(2, pdsRepository.count());
         assertEquals(1, pdsRepository.findByPatient(patient1).size());
         assertEquals(1, pdsRepository.findByPatientId(patient1.getId()).size());

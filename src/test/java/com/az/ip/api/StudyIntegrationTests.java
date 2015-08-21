@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 public class StudyIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(StudyIntegrationTests.class);
-    private static final String BASE_URI = "/api/studies";
+    private static final String BASE_URI = "/raml-api/studies";
     private static final String PROTOCOL = "http";
 
     @Value("${local.server.port}")

@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 public class SecurityIntegrationTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(SecurityIntegrationTests.class);
-    private static final String BASE_URI = "/api";
+    private static final String BASE_URI = "/raml-api";
     private static final String PROTOCOL = "http";
 
     @Value("${local.server.port}")
