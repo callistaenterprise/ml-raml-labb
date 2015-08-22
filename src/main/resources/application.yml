@@ -4,10 +4,17 @@ spring.jpa:
     hibernate.format_sql: true
 
 security:
-  ignored: /raml/**, /console/**
+  ignored: /swagger-ui.html, /swagger-resources/**, /v2/api-docs/**, /configuration/**, /webjars/**, /raml/**, /console/**
   user:
     name: demo
     password: omed.1
+
+logging:
+  level:
+    root: INFO
+    com.az.ip.api: DEBUG
+    # Set DEBUG level to activate our log-filter to log each request and response
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
 
 #server:
 #  ssl:
