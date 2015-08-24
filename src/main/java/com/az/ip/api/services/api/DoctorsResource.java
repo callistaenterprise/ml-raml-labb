@@ -108,7 +108,7 @@ public interface DoctorsResource {
     })
     void updateDoctor(
         @PathVariable String doctorId,
-        @RequestBody  Study entity);
+        @RequestBody  Doctor entity);
 
     /**
      * Deletes a doctor
@@ -123,7 +123,7 @@ public interface DoctorsResource {
         value    = "Deletes a doctor",
         notes    = "The delete is idempotent, i.e. if the entity already is deleted no error will be thrown",
         response = Doctor.class)
-    void deleteStudy(@PathVariable String doctorId);
+    void deleteDoctor(@PathVariable String doctorId);
 
     /**
      * Get a ref to each study that this doctor is assigned to
@@ -150,7 +150,7 @@ public interface DoctorsResource {
         value    = "/{doctorId}/assignedInStudies/{studyId}/patients",
         method   = POST,
         consumes = "application/json")
-    void assignDoctorToStudy(
+    void assignPatientByDoctorToStudy(
         @PathVariable String doctorId,
         @PathVariable String studyId,
         @RequestBody  Id patientIdRef);

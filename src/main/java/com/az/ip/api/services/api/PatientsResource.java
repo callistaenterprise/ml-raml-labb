@@ -121,7 +121,7 @@ public interface PatientsResource {
         value    = "Deletes a patient",
         notes    = "The delete is idempotent, i.e. if the entity already is deleted no error will be thrown",
         response = Patient.class)
-    void deleteStudy(@PathVariable String patientId);
+    void deletePatient(@PathVariable String patientId);
 
 
     /* -------------- */
@@ -187,7 +187,7 @@ public interface PatientsResource {
     @ApiOperation(
         value    = "Deletes a measurement from a patient in a study",
         notes    = "The delete is idempotent, i.e. if the entity already is deleted no error will be thrown")
-    void deleteMeasuremntFromPatientInStudy(
+    void deleteMeasurmentFromPatientInStudy(
         @PathVariable String patientId,
         @PathVariable String studyId,
         @PathVariable String measurementId);

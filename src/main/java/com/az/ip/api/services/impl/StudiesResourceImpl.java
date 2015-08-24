@@ -64,7 +64,6 @@ public class StudiesResourceImpl implements StudiesResource {
             return util.createOkResponse(response);
         }
 
-        ResponseStatusExceptionResolver m;
         // Ordinary find...
         LOG.debug("find, orderBy: {}, order: {}, page: {}, size: {}", sort.getOrderBy(), sort.getOrder(), page.getPage(), page.getSize());
 
@@ -86,12 +85,13 @@ public class StudiesResourceImpl implements StudiesResource {
     @Override
     public ResponseEntity<Study> createStudy(@RequestBody Study entity) {
         try {
-            StudyEntity newStudy = repository.save(toNewDbEntity(entity));
-            return util.createOkResponse(toApiEntity(newStudy));
+            StudyEntity newEntity = repository.save(toNewDbEntity(entity));
+            LOG.debug("Created entity with id: {}", newEntity.getId());
+            return util.createOkResponse(toApiEntity(newEntity));
 
         } catch (RuntimeException ex) {
             // TODO: Add checks for common erros such as duplicate detectien and improve error message!
-            LOG.error("postPatient request failed, exception: [{}], cause: []{}", ex,toString(), ex.getCause());
+            LOG.error("post request failed, exception: [{}], cause: []{}", ex,toString(), ex.getCause());
             throw new HttpConflictException(ex.getMessage());
         }
     }
