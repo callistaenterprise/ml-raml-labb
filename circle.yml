@@ -18,5 +18,5 @@ deployment:
       - ls target
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PWD
       - docker info
-      - docker build -t magnuslarsson/az-ip-api-server:$CIRCLE_BUILD_NUM .
-      - docker push     magnuslarsson/az-ip-api-server:$CIRCLE_BUILD_NUM
+      - docker build -t magnuslarsson/az-ip-api-server:master.$CIRCLE_BUILD_NUM .
+      - docker push     magnuslarsson/az-ip-api-server:master.$CIRCLE_BUILD_NUM
