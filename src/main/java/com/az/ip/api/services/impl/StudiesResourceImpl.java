@@ -51,7 +51,7 @@ public class StudiesResourceImpl implements StudiesResource {
 
     @Override
     public ResponseEntity<List<Study>> findStudies(
-        @RequestParam(value = "name", required=false) String name,
+        @RequestParam(required=false) String name,
         @ModelAttribute Sortable sort,
         @ModelAttribute Pageable page) {
 

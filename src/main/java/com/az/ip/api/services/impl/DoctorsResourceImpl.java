@@ -47,7 +47,10 @@ public class DoctorsResourceImpl implements DoctorsResource {
 
 
     @Override
-    public ResponseEntity<List<Doctor>> findDoctors(@RequestParam String username, @ModelAttribute Sortable sort, @ModelAttribute Pageable page) {
+    public ResponseEntity<List<Doctor>> findDoctors(
+        @RequestParam(required=false) String username,
+        @ModelAttribute Sortable sort,
+        @ModelAttribute Pageable page) {
 
         // Find by name?
         if (username != null) {

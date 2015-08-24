@@ -52,7 +52,11 @@ public class PatientsResourceImpl implements PatientsResource {
     private PatientDoctorStudyRepository patientDoctorStudyRepository;
 
     @Override
-    public ResponseEntity<List<Patient>> findPatients(@RequestParam String username, @ModelAttribute Sortable sort, @ModelAttribute Pageable page) {
+    public ResponseEntity<List<Patient>> findPatients(
+        @RequestParam(required=false) String username,
+        @ModelAttribute Sortable sort,
+        @ModelAttribute Pageable page) {
+
         // Find by name?
         if (username != null) {
             LOG.debug("findByName, name: {}", username);

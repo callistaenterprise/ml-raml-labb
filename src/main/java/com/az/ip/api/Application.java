@@ -15,7 +15,7 @@ public class Application {
 
     private static final Logger LOG = LoggerFactory.getLogger(Application.class);
 
-    private static final String VERSION = "v1.0.0-M1";
+    private static final String VERSION = "v1.0.0-M2";
 
     @Bean
     public Filter logFilter() {
