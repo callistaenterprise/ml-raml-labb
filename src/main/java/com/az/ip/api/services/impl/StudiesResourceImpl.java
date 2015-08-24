@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -96,12 +97,12 @@ public class StudiesResourceImpl implements StudiesResource {
     }
 
     @Override
-    public ResponseEntity<Study> getStudy(@PathVariable String id) {
-        LOG.debug("Get by id: {}", id);
-        StudyEntity entity = repository.findOne(id);
+    public ResponseEntity<Study> getStudy(@PathVariable String studyId) {
+        LOG.debug("Get by id: {}", studyId);
+        StudyEntity entity = repository.findOne(studyId);
 
         if (entity == null) {
-            String errMsg = "Entity with id: " + id + " was not found";
+            String errMsg = "Entity with id: " + studyId + " was not found";
             LOG.debug(errMsg);
             throw new HttpNotFoundException(errMsg);
 
@@ -112,11 +113,11 @@ public class StudiesResourceImpl implements StudiesResource {
     }
 
     @Override
-    public void updateStudy(@PathVariable String id, @RequestBody Study entity) {
+    public void updateStudy(@PathVariable String studyId, @RequestBody Study entity) {
         // TODO #1: What to do if not found??? Upsert or error???
 
         // TODO #2: Do we need to move the id over from the uri-parameter?
-        entity.setId(id);
+        entity.setId(studyId);
 
         LOG.debug("Update entity: {}, {}, {}", entity.getId(), entity.getVersion(), entity.getName());
         try {
@@ -127,9 +128,61 @@ public class StudiesResourceImpl implements StudiesResource {
     }
 
     @Override
-    public void deleteStudy(@PathVariable String id) {
+    public void deleteStudy(@PathVariable String studyId) {
         // If not found just return ok to behave idempotent...
-        repository.delete(id);
+        LOG.debug("Delete by id: {}", studyId);
+        repository.delete(studyId);
+    }
+
+    @Override
+    public ResponseEntity<List<Id>> getAssignedDoctors(@PathVariable String studyId) {
+        LOG.debug("getAssignedDoctors to study with id: {}", studyId);
+        StudyEntity entity = repository.findOne(studyId);
+        List<Id> doctorIds = entity.getAssigendDoctors().stream().map(d -> new Id().withId(d.getId())).collect(Collectors.toList());
+
+        LOG.debug("getAssignedDoctors found: #{}", doctorIds.size());
+
+        return util.createOkResponse(doctorIds);
+    }
+
+    @Override
+    public void assignDoctorToStudy(@PathVariable String studyId, @RequestBody Id doctorIdRef) {
+        String doctorId = doctorIdRef.getId();
+
+        LOG.debug("Assign doctor with id {} to study with id: {}", doctorId, studyId);
+
+        StudyEntity  study  = repository.findOne(studyId);
+        DoctorEntity doctor = doctorRepository.findOne(doctorId);
+        study.getAssigendDoctors().add(doctor);
+
+        repository.save(study);
+    }
+
+    @Override
+    public void removeDoctorFromStudy(@PathVariable String studyId, @PathVariable String doctorId) {
+        LOG.debug("Remove doctor with id {} from study with id: {}", doctorId, studyId);
+
+        StudyEntity  study  = repository.findOne(studyId);
+        DoctorEntity doctor = doctorRepository.findOne(doctorId);
+        study.getAssigendDoctors().remove(doctor);
+
+        repository.save(study);
+    }
+
+    @Override
+    public ResponseEntity<List<Measurement>> getMeasurementsInStudy(@PathVariable String studyId) {
+
+        LOG.debug("Find all measurements for study with id: {}", studyId);
+
+        StudyEntity study = repository.findOne(studyId);
+        List<Measurement> list = patientDoctorStudyRepository.findByStudy(study).stream()
+            .flatMap(m -> m.getMeasurements().stream())
+            .map(m -> toApiMeasurementEntity(m))
+            .collect(Collectors.toList());
+
+        LOG.debug("getMeasurementsInStudy found: #{}", list.size());
+
+        return util.createOkResponse(list);
     }
 
 

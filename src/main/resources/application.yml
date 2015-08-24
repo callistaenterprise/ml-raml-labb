@@ -4,7 +4,7 @@ spring.jpa:
     hibernate.format_sql: true
 
 security:
-  ignored: /swagger-ui.html, /swagger-resources/**, /v2/api-docs/**, /configuration/**, /webjars/**, /raml/**, /console/**
+  ignored: /**, /swagger-ui.html, /swagger-resources/**, /v2/api-docs/**, /configuration/**, /webjars/**, /raml/**, /console/**
   user:
     name: demo
     password: omed.1
@@ -15,6 +15,8 @@ logging:
     com.az.ip.api: DEBUG
     # Set DEBUG level to activate our log-filter to log each request and response
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    # Set TTRACE to see actual parameter and result set values
+    org.hibernate.type: TRACE
 
 #server:
 #  ssl:
