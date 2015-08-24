@@ -29,11 +29,11 @@ public class SwaggerConfig {
         ApiInfo apiInfo = new ApiInfo(
                 "AZ IP REST API",
                 "This is a description of the API...",
-                "v1.0.5",
+                "v1.0.6",
                 "API TOS",
                 "me@wherever.com",
                 "API License",
-                "API License URL"
+                "https://raw.githubusercontent.com/swagger-api/swagger-ui/master/LICENSE"
         );
 
         return apiInfo;
