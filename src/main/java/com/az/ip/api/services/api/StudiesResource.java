@@ -21,7 +21,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
  */
 @RequestMapping("/api/studies")
 @Api(
-    value = "studies",
+    value       = "studies",
     description = "Operations on studies")
 public interface StudiesResource {
 
@@ -35,7 +35,7 @@ public interface StudiesResource {
      */
     @RequestMapping(
         method   = GET,
-        produces ="application/json")
+        produces = "application/json")
     @ApiOperation(
         value    = "Find studies, optionally filter by name",
         notes    = "Support standard paging and sorting, orderBy fields: name",
@@ -44,7 +44,7 @@ public interface StudiesResource {
         @ApiResponse(code = 422, message = "Invalid parameters in request, see error message in body for more information")
     })
     ResponseEntity<List<Study>> findStudies(
-        @RequestParam   String   name,
+        @RequestParam String name,
         @ModelAttribute Sortable sort,
         @ModelAttribute Pageable page);
 
@@ -98,17 +98,18 @@ public interface StudiesResource {
     @RequestMapping(
         value    = "/{studyId}",
         method   = PUT,
-        consumes ="application/json")
+        consumes = "application/json")
     @ApiOperation(
         value    = "Updates a study",
-        notes    = "The version number is used to detect if a concurrent update has been performed, returns a 422 error if the version field is old",
+        notes    = "The version number is used for optimistic locking, i.e. to detect if a concurrent update has been performed, returns a 422 error if the version field is old",
         response = Study.class)
     @ApiResponses(value = {
         @ApiResponse(code = 422, message = "Unprocessable entity, the entity has been updated by someone else.")
     })
     void updateStudy(
         @PathVariable String studyId,
-        @RequestBody  Study entity);
+        @RequestBody Study entity);
+
 
 
     /**
@@ -136,7 +137,7 @@ public interface StudiesResource {
     @RequestMapping(
         value    = "/{studyId}/assignedDoctors",
         method   = GET,
-        produces ="application/json")
+        produces = "application/json")
     ResponseEntity<List<Id>> getAssignedDoctors(@PathVariable String studyId);
 
 
@@ -185,7 +186,7 @@ public interface StudiesResource {
     @RequestMapping(
         value    = "/{studyId}/measurements",
         method   = GET,
-        produces ="application/json")
+        produces = "application/json")
     ResponseEntity<List<Measurement>> getMeasurementsInStudy(@PathVariable String studyId);
 
 }

@@ -14,9 +14,10 @@ deployment:
   hub:
     branch: master
     commands:
-      - ls
-      - ls target
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PWD
       - docker info
+# Renaming the target-folder for the time being to be compliant with Shippable builds...
+      - mv target buildoutput
       - docker build -t magnuslarsson/az-ip-api-server:master.$CIRCLE_BUILD_NUM .
-      - docker push     magnuslarsson/az-ip-api-server:master.$CIRCLE_BUILD_NUM
+      - mv buildoutput target
+      - docker push magnuslarsson/az-ip-api-server:master.$CIRCLE_BUILD_NUM
