@@ -14,6 +14,8 @@ deployment:
   hub:
     branch: master
     commands:
+      - ls
+      - ls target
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PWD
       - docker info
       - docker build -t magnuslarsson/az-ip-api-server:$CIRCLE_BUILD_NUM .
